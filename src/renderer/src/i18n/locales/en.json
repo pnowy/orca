@@ -19138,7 +19138,11 @@
         "launchFailed": "Could not start the agent.",
         "noCheckout": "This project has no checkout yet.",
         "noProjectUnavailable": "Threads without a project need the desktop app.",
-        "untitled": "New thread"
+        "untitled": "New thread",
+        "snoozed": "Snoozed",
+        "settled": "Settled",
+        "showMore": "Show {{count}} more",
+        "reopen": "Reopen"
       }
     }
   },

@@ -18,3 +18,8 @@ export function settleThread(worktree: Worktree): void {
 export function snoozeThread(key: string, option: ThreadSnoozeOption): void {
   useAppStore.getState().updateThreadState(key, { snoozedUntil: snoozeUntil(option, new Date()) })
 }
+
+/** A settled thread reopens when an agent runs; this does it by hand. */
+export function reopenThread(key: string): void {
+  useAppStore.getState().updateThreadState(key, { openedAt: Date.now(), snoozedUntil: undefined })
+}

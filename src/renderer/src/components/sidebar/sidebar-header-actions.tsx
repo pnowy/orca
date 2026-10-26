@@ -7,7 +7,6 @@ import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'
 import { translate } from '@/i18n/i18n'
 import { openWorkspaceCreationComposerWithTourHandoff } from '../contextual-tours/workspace-creation-tour-handoff'
 import SidebarWorkspaceOptionsMenu from './SidebarWorkspaceOptionsMenu'
-import { ThreadOptionsMenu } from './threads/ThreadOptionsMenu'
 
 function AddProjectButton({
   preserveWorkspaceBoardOpen
@@ -98,9 +97,7 @@ export function SidebarHeaderActions({
   return (
     <div className="flex shrink-0 items-center gap-1" data-sidebar-header-actions="">
       <div ref={activityOptionsTarget} className="flex size-6 shrink-0 items-center">
-        {agentsViewActive ? null : threadsLayout ? (
-          <ThreadOptionsMenu />
-        ) : (
+        {agentsViewActive || threadsLayout ? null : (
           <SidebarWorkspaceOptionsMenu
             preserveWorkspaceBoardOpen
             onMenuOpenChange={onWorkspaceBoardMenuOpenChange}

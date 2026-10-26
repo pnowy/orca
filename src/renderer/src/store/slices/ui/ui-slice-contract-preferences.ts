@@ -102,11 +102,11 @@ export type UISlicePreferences = {
   ) => void
   /** Apply a whole-list rewrite (reorder) in one persisted write. */
   replaceThreadStates: (states: ThreadStates) => void
-  /** Session-only Threads options. */
-  threadsShowSnoozed: boolean
-  setThreadsShowSnoozed: (v: boolean) => void
-  threadsShowSettled: boolean
-  setThreadsShowSettled: (v: boolean) => void
+  /** Session-only collapse state of the Threads list's Snoozed and Settled sections. */
+  threadsSnoozedCollapsed: boolean
+  setThreadsSnoozedCollapsed: (v: boolean) => void
+  threadsSettledCollapsed: boolean
+  setThreadsSettledCollapsed: (v: boolean) => void
   collapsedGroups: Set<string>
   toggleCollapsedGroup: (key: string) => void
   worktreeCardProperties: WorktreeCardProperty[]

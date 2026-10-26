@@ -54,11 +54,10 @@ function useSnoozeClock(states: Parameters<typeof nextSnoozeExpiry>[0]): number 
   return now
 }
 
-export function useThreadListModel(args: {
-  query: string
-  showSnoozed: boolean
-  showSettled: boolean
-}): { rows: ThreadRows; workspaces: Worktree[] } {
+export function useThreadListModel(args: { query: string }): {
+  rows: ThreadRows
+  workspaces: Worktree[]
+} {
   const workspaces = useThreadWorkspaces()
   const states = useAppStore((s) => s.threadStates ?? EMPTY_THREAD_STATES)
   const repos = useAppStore((s) => s.repos)
@@ -76,19 +75,9 @@ export function useThreadListModel(args: {
         states,
         liveStatusByWorktreeId,
         now: clockNow,
-        matches,
-        showSnoozed: args.showSnoozed,
-        showSettled: args.showSettled
+        matches
       }),
-    [
-      workspaces,
-      states,
-      liveStatusByWorktreeId,
-      clockNow,
-      matches,
-      args.showSnoozed,
-      args.showSettled
-    ]
+    [workspaces, states, liveStatusByWorktreeId, clockNow, matches]
   )
   return { rows, workspaces }
 }
