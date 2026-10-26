@@ -67,7 +67,7 @@ export function registerUIHandlers(
     }
   })
 
-  registerThreadScratchFolderHandler()
+  registerThreadScratchFolderHandler(store)
   ipcMain.handle('ui:getJiraQuickFilters', () =>
     normalizeJiraQuickFilterState(store.getUI().jiraQuickFilterState)
   )
