@@ -192,7 +192,10 @@ describe('SidebarHeader', () => {
 
     expect(headerButton('New workspace')).toBeTruthy()
     expect(headerButton('Add project')).toBeTruthy()
-    expect(container.querySelector('[data-slot="dropdown-menu-trigger"]')).toBeNull()
+    // The title is the Projects/Threads switch; the create actions themselves open no menu.
+    expect(
+      container.querySelector('[data-sidebar-header-actions] [data-slot="dropdown-menu-trigger"]')
+    ).toBeNull()
 
     await act(async () => {
       headerButton('Add project').click()

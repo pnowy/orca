@@ -11,6 +11,7 @@ import { reorderThread } from '../../../../../shared/threads/thread-state'
 import WorktreeCard from '../WorktreeCard'
 import type { ThreadRow } from './thread-rows'
 import { useThreadListModel } from './use-thread-list-model'
+import { useThreadOpenObserver } from './use-thread-open-observer'
 
 type DropTarget = { key: string; position: 'before' | 'after' }
 
@@ -23,6 +24,7 @@ function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.El
 }
 
 export default function ThreadList(): React.JSX.Element {
+  useThreadOpenObserver(true)
   const [query, setQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
   const showSnoozed = useAppStore((s) => s.threadsShowSnoozed)
@@ -147,9 +149,10 @@ export default function ThreadList(): React.JSX.Element {
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-sidebar-threads-list="">
       <div className="shrink-0 px-2 pb-1.5 pt-1">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <div className="flex items-center gap-1.5">
+          <Search className="size-3.5 shrink-0 text-muted-foreground" />
           <Input
+            density="compact"
             ref={searchRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -162,7 +165,6 @@ export default function ThreadList(): React.JSX.Element {
             }}
             placeholder={translate('components.sidebar.threads.search', 'Search')}
             aria-label={translate('components.sidebar.threads.searchLabel', 'Search threads')}
-            className="h-7 w-full pl-7 text-xs shadow-none focus-visible:ring-0"
           />
         </div>
       </div>

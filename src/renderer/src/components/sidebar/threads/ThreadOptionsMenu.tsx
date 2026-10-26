@@ -28,7 +28,7 @@ export function ThreadOptionsMenu(): React.JSX.Element {
               variant="ghost"
               size="icon-xs"
               type="button"
-              className="relative text-muted-foreground"
+              className="relative"
               aria-label={label}
             >
               <SlidersHorizontal className="size-3.5" strokeWidth={2.25} />

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
+import { makeWorktree } from '@/store/slices/worktrees-slice-test-fixtures'
 import { buildThreadRows } from './thread-rows'
 
 function worktree(id: string, overrides: Partial<Worktree> = {}): Worktree {
-  // SAFETY: tests only read the fields the thread model consumes.
-  return {
+  return makeWorktree({
     id,
     repoId: 'repo',
     path: `/r/${id}`,
@@ -13,9 +13,8 @@ function worktree(id: string, overrides: Partial<Worktree> = {}): Worktree {
     isMainWorktree: false,
     isArchived: false,
     isPinned: false,
-    displayName: id,
     ...overrides
-  } as Worktree
+  })
 }
 
 const base = {

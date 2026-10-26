@@ -3,7 +3,7 @@ import { ArrowLeft, FolderGit2, FolderOpen, SquareDashed } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -66,10 +66,12 @@ function hostLabel(repo: Repo): string {
 
 function ProjectPicker({
   repos,
-  onPick
+  onPick,
+  onClose
 }: {
   repos: readonly Repo[]
   onPick: (target: Target) => void
+  onClose: () => void
 }): React.JSX.Element {
   // ⌘1–9 picks a project without leaving the search field.
   useEffect(() => {
@@ -88,9 +90,15 @@ function ProjectPicker({
   }, [repos, onPick])
 
   return (
-    <Command loop>
+    <>
       <CommandInput
         autoFocus
+        onKeyDown={(event) => {
+          // Backspace on an empty search closes, like T3's palette.
+          if (event.key === 'Backspace' && event.currentTarget.value === '') {
+            onClose()
+          }
+        }}
         placeholder={translate('components.sidebar.threads.searchProjects', 'Search projects...')}
       />
       <CommandList className="max-h-[360px]">
@@ -131,7 +139,7 @@ function ProjectPicker({
           ))}
         </CommandGroup>
       </CommandList>
-    </Command>
+    </>
   )
 }
 
@@ -186,14 +194,14 @@ function ThreadComposer({
         <Button
           variant="ghost"
           size="icon-xs"
-          className="mt-0.5 text-muted-foreground"
+          className="mt-0.5"
           aria-label={translate('components.sidebar.threads.back', 'Back')}
           onClick={onBack}
         >
           <ArrowLeft className="size-3.5" />
         </Button>
         <div className="flex min-w-0 flex-col">
-          <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
+          <DialogTitle size="compact">{title}</DialogTitle>
           {target.kind === 'project' ? (
             <button
               type="button"
@@ -222,14 +230,14 @@ function ThreadComposer({
           'components.sidebar.threads.promptPlaceholder',
           'Ask for changes, or leave empty to just start the agent'
         )}
-        className="min-h-24 resize-none text-sm"
+        className="min-h-24 resize-none"
       />
       <div className="flex flex-wrap items-center gap-2">
         <Select
           value={agent ?? undefined}
           onValueChange={(value) => setAgent(agents.find((id) => id === value) ?? null)}
         >
-          <SelectTrigger size="sm" className="h-7 w-auto gap-1.5 text-xs">
+          <SelectTrigger size="sm">
             <SelectValue placeholder={translate('components.sidebar.threads.agent', 'Agent')} />
           </SelectTrigger>
           <SelectContent>
@@ -246,7 +254,7 @@ function ThreadComposer({
             value={workspace}
             onValueChange={(value) => setWorkspace(value === 'checkout' ? 'checkout' : 'worktree')}
           >
-            <SelectTrigger size="sm" className="h-7 w-auto gap-1.5 text-xs">
+            <SelectTrigger size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -291,47 +299,38 @@ export default function NewThreadDialog(): React.JSX.Element | null {
     return null
   }
 
+  if (target === null) {
+    return (
+      <CommandDialog
+        open
+        onOpenChange={(open) => !open && closeModal()}
+        title={translate('components.sidebar.threads.newThread', 'New thread')}
+        description={translate(
+          'components.sidebar.threads.dialogDescription',
+          'Pick a project, then describe what the agent should do.'
+        )}
+      >
+        <ProjectPicker repos={repos} onPick={handlePick} onClose={closeModal} />
+      </CommandDialog>
+    )
+  }
+
   return (
     <Dialog open onOpenChange={(open) => !open && closeModal()}>
-      <DialogContent
-        className="gap-0 overflow-hidden p-0 sm:max-w-xl"
-        showCloseButton={false}
-        onKeyDown={(event) => {
-          // Backspace on an empty picker field steps back like T3's palette.
-          if (
-            event.key === 'Backspace' &&
-            target === null &&
-            event.target instanceof HTMLInputElement &&
-            event.target.value === ''
-          ) {
-            closeModal()
-          }
-        }}
-      >
+      <DialogContent showCloseButton={false} className="sm:max-w-xl">
         <DialogDescription className="sr-only">
           {translate(
             'components.sidebar.threads.dialogDescription',
             'Pick a project, then describe what the agent should do.'
           )}
         </DialogDescription>
-        {target === null ? (
-          <>
-            <DialogTitle className="sr-only">
-              {translate('components.sidebar.threads.newThread', 'New thread')}
-            </DialogTitle>
-            <ProjectPicker repos={repos} onPick={handlePick} />
-          </>
-        ) : (
-          <div className="p-4">
-            <ThreadComposer
-              key={target.kind === 'project' ? target.repo.id : NO_PROJECT_VALUE}
-              target={target}
-              onBack={() => setTarget(null)}
-              onStartWithoutProject={() => setTarget({ kind: 'none' })}
-              onDone={closeModal}
-            />
-          </div>
-        )}
+        <ThreadComposer
+          key={target.kind === 'project' ? target.repo.id : NO_PROJECT_VALUE}
+          target={target}
+          onBack={() => setTarget(null)}
+          onStartWithoutProject={() => setTarget({ kind: 'none' })}
+          onDone={closeModal}
+        />
       </DialogContent>
     </Dialog>
   )
