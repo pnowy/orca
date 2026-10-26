@@ -11,6 +11,7 @@ import type { PersistedUIState } from '../../shared/persisted-ui-state-types'
 import { isFeatureInteractionId } from '../../shared/feature-interactions'
 import { isWslMoveWindowWriteHeld } from '../persistence/moving-wsl-projects/wsl-move-window-write-hold'
 import { isTrustedMainRendererSender } from './main-renderer-sender-trust'
+import { registerThreadScratchFolderHandler } from './thread-scratch-folder'
 
 let trustedUIRendererWebContentsId: number | null = null
 
@@ -59,6 +60,7 @@ export function registerUIHandlers(
 ): void {
   store.onUIChanged((ui) => sendToTrustedUIRenderer('ui:stateChanged', ui))
 
+  registerThreadScratchFolderHandler()
   ipcMain.handle('ui:getJiraQuickFilters', () =>
     normalizeJiraQuickFilterState(store.getUI().jiraQuickFilterState)
   )

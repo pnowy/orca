@@ -7,6 +7,7 @@ import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'
 import { useTranslate } from '@/i18n/use-translate'
 import { openWorkspaceCreationComposerWithTourHandoff } from '../contextual-tours/workspace-creation-tour-handoff'
 import SidebarWorkspaceOptionsMenu from './worktree-list/controls/SidebarWorkspaceOptionsMenu'
+import { ThreadOptionsMenu } from './threads/ThreadOptionsMenu'
 
 function AddProjectButton({
   preserveWorkspaceBoardOpen
@@ -46,13 +47,21 @@ function NewWorkspaceButton({
 }): React.JSX.Element {
   const t = useTranslate()
   const keybindings = useAppStore((s) => s.keybindings)
+  const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
   // Show the primary create shortcut so aliases do not crowd the tooltip.
   const shortcutLabel = formatOptionalPrimaryShortcutLabel('workspace.create', keybindings)
-  const label = t('auto.components.sidebar.SidebarHeader.92154beb7e', 'New workspace')
+  const label = threadsLayout
+    ? t('components.sidebar.threads.newThread', 'New thread')
+    : t('auto.components.sidebar.SidebarHeader.92154beb7e', 'New workspace')
 
+  const openModal = useAppStore((s) => s.openModal)
   const handleCreateWorkspace = useCallback(() => {
+    if (threadsLayout) {
+      openModal('new-thread')
+      return
+    }
     openWorkspaceCreationComposerWithTourHandoff()
-  }, [])
+  }, [openModal, threadsLayout])
 
   return (
     <Tooltip>
@@ -87,10 +96,13 @@ export function SidebarHeaderActions({
   agentsViewActive?: boolean
   activityOptionsTarget?: React.Ref<HTMLDivElement>
 }): React.JSX.Element {
+  const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
   return (
     <div className="flex shrink-0 items-center gap-1" data-sidebar-header-actions="">
       <div ref={activityOptionsTarget} className="flex size-6 shrink-0 items-center">
-        {agentsViewActive ? null : (
+        {agentsViewActive ? null : threadsLayout ? (
+          <ThreadOptionsMenu />
+        ) : (
           <SidebarWorkspaceOptionsMenu
             preserveWorkspaceBoardOpen
             onMenuOpenChange={onWorkspaceBoardMenuOpenChange}
