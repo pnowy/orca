@@ -23,6 +23,5 @@ export async function createThreadScratchFolder(now = new Date()): Promise<strin
 }
 
 export function registerThreadScratchFolderHandler(): void {
-  ipcMain.removeHandler('ui:createThreadScratchFolder')
   ipcMain.handle('ui:createThreadScratchFolder', () => createThreadScratchFolder())
 }
