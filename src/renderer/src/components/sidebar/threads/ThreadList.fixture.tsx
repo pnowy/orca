@@ -55,3 +55,18 @@ export const list = defineFixture({
     </div>
   )
 })
+
+export const draggingToSettled = defineFixture({
+  ...list,
+  interact: async (frame) => {
+    const drag = (type: string, el: Element | null): void => {
+      el?.dispatchEvent(new DragEvent(type, { bubbles: true, dataTransfer: new DataTransfer() }))
+    }
+    drag('dragstart', frame.querySelector('[data-thread-row-key] [data-worktree-card-surface]'))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    const settledHeader = Array.from(frame.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Settled'
+    )
+    drag('dragover', settledHeader ?? null)
+  }
+})

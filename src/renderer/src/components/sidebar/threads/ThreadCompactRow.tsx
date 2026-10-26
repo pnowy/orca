@@ -11,11 +11,17 @@ import { ThreadProjectGlyph, activateThread, threadTitle } from './thread-projec
 export const ThreadCompactRow = React.memo(function ThreadCompactRow({
   row,
   repo,
-  isActive
+  isActive,
+  draggable,
+  onDragStart,
+  onDragEnd
 }: {
   row: ThreadRow
   repo: Repo | undefined
   isActive: boolean
+  draggable: boolean
+  onDragStart: () => void
+  onDragEnd: () => void
 }): React.JSX.Element {
   const now = useNow(60_000)
   const at = row.at ?? 0
@@ -33,6 +39,13 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
         )}
         data-worktree-card-surface="true"
         data-worktree-card-active={isActive ? 'primary' : undefined}
+        draggable={draggable}
+        onDragStart={(event) => {
+          event.dataTransfer.effectAllowed = 'move'
+          event.dataTransfer.setData('text/plain', row.worktree.id)
+          onDragStart()
+        }}
+        onDragEnd={onDragEnd}
         onClick={() => activateThread(row.worktree, repo)}
       >
         <span className="opacity-60">
