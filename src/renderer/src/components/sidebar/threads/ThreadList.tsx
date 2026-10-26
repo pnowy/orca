@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Plus, Search } from 'lucide-react'
+import { ChevronDown, Plus, Search } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { getRepoMapFromState } from '@/store/selectors'
 import { Button } from '@/components/ui/button'
@@ -9,11 +9,45 @@ import { cn } from '@/lib/utils'
 import { isActiveSidebarWorkspace } from '../../../../../shared/sidebar-list/active-workspace'
 import { reorderThread } from '../../../../../shared/threads/thread-state'
 import type { ThreadRow } from './thread-rows'
+import { ThreadCompactRow } from './ThreadCompactRow'
 import { ThreadRowCard } from './ThreadRowCard'
 import { useThreadListModel } from './use-thread-list-model'
 import { useThreadOpenObserver } from './use-thread-open-observer'
 
 type DropTarget = { key: string; position: 'before' | 'after' }
+
+const SETTLED_PAGE_SIZE = 10
+
+/** T3-style collapsible divider: label, rule, chevron. */
+function CollapsibleSectionHeader({
+  label,
+  collapsed,
+  onToggle,
+  accent = false
+}: {
+  label: string
+  collapsed: boolean
+  onToggle: () => void
+  accent?: boolean
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      className={cn(
+        'flex w-full items-center gap-2 px-3 pb-1 pt-3 text-xs outline-none select-none focus-visible:ring-1 focus-visible:ring-ring',
+        accent ? 'text-blue-500' : 'text-muted-foreground'
+      )}
+      aria-expanded={!collapsed}
+      onClick={onToggle}
+    >
+      <span className="shrink-0">{label}</span>
+      <span className={cn('h-px flex-1', accent ? 'bg-blue-500/40' : 'bg-border')} />
+      <ChevronDown
+        className={cn('size-3.5 shrink-0 transition-transform', collapsed && '-rotate-90')}
+      />
+    </button>
+  )
+}
 
 function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
@@ -27,9 +61,12 @@ export default function ThreadList(): React.JSX.Element {
   useThreadOpenObserver(true)
   const [query, setQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
-  const showSnoozed = useAppStore((s) => s.threadsShowSnoozed)
-  const showSettled = useAppStore((s) => s.threadsShowSettled)
-  const { rows } = useThreadListModel({ query, showSnoozed, showSettled })
+  const { rows } = useThreadListModel({ query })
+  const snoozedCollapsed = useAppStore((s) => s.threadsSnoozedCollapsed)
+  const setSnoozedCollapsed = useAppStore((s) => s.setThreadsSnoozedCollapsed)
+  const settledCollapsed = useAppStore((s) => s.threadsSettledCollapsed)
+  const setSettledCollapsed = useAppStore((s) => s.setThreadsSettledCollapsed)
+  const [settledLimit, setSettledLimit] = useState(SETTLED_PAGE_SIZE)
   const repos = useAppStore((s) => s.repos)
   const repoMap = useMemo(() => getRepoMapFromState({ repos }), [repos])
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
@@ -91,11 +128,7 @@ export default function ThreadList(): React.JSX.Element {
         aria-current={isActive ? 'page' : undefined}
         data-thread-row-key={row.key}
         data-worktree-id={row.worktree.id}
-        className={cn(
-          'relative px-1.5',
-          row.kind !== 'open' && 'opacity-60',
-          draggingKey === row.key && 'opacity-40'
-        )}
+        className={cn('relative px-1.5', draggingKey === row.key && 'opacity-40')}
         onDragOver={
           draggable && draggingKey
             ? (event) => {
@@ -142,7 +175,27 @@ export default function ThreadList(): React.JSX.Element {
     )
   }
 
-  const empty = rows.pinned.length === 0 && rows.rest.length === 0 && rows.dimmed.length === 0
+  const renderCompactRow = (row: ThreadRow): React.JSX.Element => (
+    <div key={row.key} className="px-1.5" data-thread-row-key={row.key}>
+      <ThreadCompactRow
+        row={row}
+        repo={repoMap.get(row.worktree.repoId)}
+        isActive={isActiveSidebarWorkspace(row.worktree, {
+          worktreeId: activeWorktreeId,
+          hostId: activeHostId ?? null
+        })}
+      />
+    </div>
+  )
+
+  const empty =
+    rows.pinned.length === 0 &&
+    rows.rest.length === 0 &&
+    rows.snoozed.length === 0 &&
+    rows.settled.length === 0
+  // A search shows every settled match; paging only trims the idle list.
+  const visibleSettled = searching ? rows.settled : rows.settled.slice(0, settledLimit)
+  const hiddenSettledCount = rows.settled.length - visibleSettled.length
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-sidebar-threads-list="">
@@ -167,44 +220,79 @@ export default function ThreadList(): React.JSX.Element {
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto pb-2 scrollbar-sleek" role="listbox">
-        {empty ? (
-          <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
-            <p className="text-xs text-muted-foreground">
-              {searching
-                ? translate('components.sidebar.threads.noMatches', 'No threads match.')
-                : translate('components.sidebar.threads.empty', 'No open threads.')}
-            </p>
-            {searching ? null : (
-              <Button size="sm" variant="outline" onClick={() => openModal('new-thread')}>
-                <Plus className="size-3.5" />
-                {translate('components.sidebar.threads.newThread', 'New thread')}
-              </Button>
-            )}
-          </div>
-        ) : null}
-        {rows.pinned.length > 0 ? (
-          <>
-            <SectionLabel>{translate('components.sidebar.threads.pinned', 'Pinned')}</SectionLabel>
-            <div className="flex flex-col gap-1">
-              {rows.pinned.map((row) => renderRow(row, !searching))}
+        <div className="flex min-h-full flex-col">
+          {empty ? (
+            <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
+              <p className="text-xs text-muted-foreground">
+                {searching
+                  ? translate('components.sidebar.threads.noMatches', 'No threads match.')
+                  : translate('components.sidebar.threads.empty', 'No open threads.')}
+              </p>
+              {searching ? null : (
+                <Button size="sm" variant="outline" onClick={() => openModal('new-thread')}>
+                  <Plus className="size-3.5" />
+                  {translate('components.sidebar.threads.newThread', 'New thread')}
+                </Button>
+              )}
             </div>
-          </>
-        ) : null}
-        {rows.rest.length > 0 ? (
-          <div className={cn('flex flex-col gap-1', rows.pinned.length > 0 && 'mt-2')}>
-            {rows.rest.map((row) => renderRow(row, !searching))}
-          </div>
-        ) : null}
-        {rows.dimmed.length > 0 ? (
-          <>
-            <SectionLabel>
-              {translate('components.sidebar.threads.snoozedAndSettled', 'Snoozed and settled')}
-            </SectionLabel>
-            <div className="flex flex-col gap-1">
-              {rows.dimmed.map((row) => renderRow(row, false))}
+          ) : null}
+          {rows.pinned.length > 0 ? (
+            <>
+              <SectionLabel>
+                {translate('components.sidebar.threads.pinned', 'Pinned')}
+              </SectionLabel>
+              <div className="flex flex-col gap-1">
+                {rows.pinned.map((row) => renderRow(row, !searching))}
+              </div>
+            </>
+          ) : null}
+          {rows.rest.length > 0 ? (
+            <div className={cn('flex flex-col gap-1', rows.pinned.length > 0 && 'mt-2')}>
+              {rows.rest.map((row) => renderRow(row, !searching))}
             </div>
-          </>
-        ) : null}
+          ) : null}
+          <div className="mt-auto pt-2">
+            {rows.snoozed.length > 0 ? (
+              <>
+                <CollapsibleSectionHeader
+                  accent
+                  label={translate('components.sidebar.threads.snoozed', 'Snoozed')}
+                  collapsed={snoozedCollapsed}
+                  onToggle={() => setSnoozedCollapsed(!snoozedCollapsed)}
+                />
+                {snoozedCollapsed ? null : rows.snoozed.map(renderCompactRow)}
+              </>
+            ) : null}
+            {rows.settled.length > 0 ? (
+              <>
+                <CollapsibleSectionHeader
+                  label={translate('components.sidebar.threads.settled', 'Settled')}
+                  collapsed={settledCollapsed}
+                  onToggle={() => setSettledCollapsed(!settledCollapsed)}
+                />
+                {settledCollapsed ? null : (
+                  <>
+                    {visibleSettled.map(renderCompactRow)}
+                    {hiddenSettledCount > 0 ? (
+                      <div className="px-1.5">
+                        <button
+                          type="button"
+                          className="flex h-8 w-full items-center gap-2 rounded-lg px-2.5 text-sm text-muted-foreground outline-none worktree-sidebar-card-hover focus-visible:ring-1 focus-visible:ring-ring"
+                          onClick={() => setSettledLimit((limit) => limit + SETTLED_PAGE_SIZE * 2)}
+                        >
+                          <Plus className="size-3.5 opacity-60" />
+                          {translate('components.sidebar.threads.showMore', 'Show {{count}} more', {
+                            count: hiddenSettledCount
+                          })}
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   )

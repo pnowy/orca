@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlarmClock, AlarmClockOff, CircleCheck } from 'lucide-react'
+import { AlarmClock, AlarmClockOff, CircleCheck, RotateCcw } from 'lucide-react'
 import { useAppStore } from '@/store'
 import {
   DropdownMenuItem,
@@ -10,10 +10,11 @@ import {
 import { translate } from '@/i18n/i18n'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
-import type { ThreadSnoozeOption } from '../../../../../shared/threads/thread-state'
-import { settleThread, snoozeThread } from './thread-actions'
+import { isThreadOpen, type ThreadSnoozeOption } from '../../../../../shared/threads/thread-state'
+import { reopenThread, settleThread, snoozeThread } from './thread-actions'
+import { threadFallbackOpenedAt } from './thread-rows'
 
-const SNOOZE_OPTIONS: { option: ThreadSnoozeOption; label: () => string }[] = [
+export const THREAD_SNOOZE_OPTIONS: { option: ThreadSnoozeOption; label: () => string }[] = [
   { option: 'hour', label: () => translate('components.sidebar.threads.snoozeHour', '1 hour') },
   {
     option: 'three-hours',
@@ -40,6 +41,11 @@ export function ThreadMenuItems({
   const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
   const key = getWorktreeHostIdentity(worktree)
   const snoozedUntil = useAppStore((s) => s.threadStates?.[key]?.snoozedUntil ?? 0)
+  const settled = useAppStore(
+    (s) =>
+      (s.threadStates?.[key]?.settledAt ?? 0) > 0 &&
+      !isThreadOpen(s.threadStates?.[key], threadFallbackOpenedAt(worktree))
+  )
   const updateThreadState = useAppStore((s) => s.updateThreadState)
   if (!threadsLayout) {
     return null
@@ -53,7 +59,7 @@ export function ThreadMenuItems({
           {translate('components.sidebar.threads.snooze', 'Snooze')}
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
-          {SNOOZE_OPTIONS.map(({ option, label }) => (
+          {THREAD_SNOOZE_OPTIONS.map(({ option, label }) => (
             <DropdownMenuItem key={option} onSelect={() => snoozeThread(key, option)}>
               {label()}
             </DropdownMenuItem>
@@ -69,10 +75,17 @@ export function ThreadMenuItems({
           {translate('components.sidebar.threads.unsnooze', 'Unsnooze')}
         </DropdownMenuItem>
       ) : null}
-      <DropdownMenuItem disabled={disabled} onSelect={() => settleThread(worktree)}>
-        <CircleCheck className="size-3.5" />
-        {translate('components.sidebar.threads.settle', 'Settle')}
-      </DropdownMenuItem>
+      {settled ? (
+        <DropdownMenuItem disabled={disabled} onSelect={() => reopenThread(key)}>
+          <RotateCcw className="size-3.5" />
+          {translate('components.sidebar.threads.reopen', 'Reopen')}
+        </DropdownMenuItem>
+      ) : (
+        <DropdownMenuItem disabled={disabled} onSelect={() => settleThread(worktree)}>
+          <CircleCheck className="size-3.5" />
+          {translate('components.sidebar.threads.settle', 'Settle')}
+        </DropdownMenuItem>
+      )}
     </>
   )
 }

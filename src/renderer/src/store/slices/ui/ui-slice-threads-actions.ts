@@ -24,9 +24,9 @@ export function createThreadsPreferenceActions(set: UISliceSet): Partial<UISlice
       set({ threadStates: states })
       window.api.ui.set({ threadStates: states }).catch(console.error)
     },
-    threadsShowSnoozed: false,
-    setThreadsShowSnoozed: (v) => set({ threadsShowSnoozed: v }),
-    threadsShowSettled: false,
-    setThreadsShowSettled: (v) => set({ threadsShowSettled: v })
+    threadsSnoozedCollapsed: false,
+    setThreadsSnoozedCollapsed: (v) => set({ threadsSnoozedCollapsed: v }),
+    threadsSettledCollapsed: false,
+    setThreadsSettledCollapsed: (v) => set({ threadsSettledCollapsed: v })
   }
 }

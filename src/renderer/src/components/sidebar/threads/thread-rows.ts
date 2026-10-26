@@ -14,13 +14,17 @@ export type ThreadRow = {
   key: string
   worktree: Worktree
   kind: ThreadRowKind
+  /** Snoozed: wake time. Settled: when it was settled. */
+  at?: number
 }
 
 export type ThreadRows = {
   pinned: ThreadRow[]
   rest: ThreadRow[]
-  /** Settled and snoozed threads a search turned up; rendered dimmed below the open matches. */
-  dimmed: ThreadRow[]
+  /** Soonest wake first. */
+  snoozed: ThreadRow[]
+  /** Most recently settled first. */
+  settled: ThreadRow[]
 }
 
 /** Orca-created worktrees from before Threads existed count as opened when created. */
@@ -28,30 +32,30 @@ export function threadFallbackOpenedAt(worktree: Worktree): number | undefined {
   return worktree.isMainWorktree ? undefined : worktree.createdAt
 }
 
+/** null: never a thread (e.g. a main checkout no agent ran on), so it is listed nowhere. */
 export function classifyThread(
   worktree: Worktree,
   states: ThreadStates,
   liveStatus: LiveAgentWorktreeStatus | undefined,
   now: number
-): ThreadRowKind {
+): ThreadRowKind | null {
   const state = states[getWorktreeHostIdentity(worktree)]
   if (!isThreadOpen(state, threadFallbackOpenedAt(worktree))) {
-    return 'settled'
+    return (state?.settledAt ?? 0) > 0 ? 'settled' : null
   }
   return isThreadSnoozed(state, now, liveStatus === 'permission') ? 'snoozed' : 'open'
 }
 
-/** `matches` null means no search; with a search, snoozed and settled matches are kept as dimmed rows. */
+/** `matches` null means no search; a search filters every section. */
 export function buildThreadRows(args: {
   workspaces: readonly Worktree[]
   states: ThreadStates
   liveStatusByWorktreeId: ReadonlyMap<string, LiveAgentWorktreeStatus>
   now: number
   matches: ReadonlySet<string> | null
-  showSnoozed: boolean
-  showSettled: boolean
 }): ThreadRows {
-  const byKey = new Map<string, ThreadRow>()
+  const open = new Map<string, ThreadRow>()
+  const rows: ThreadRows = { pinned: [], rest: [], snoozed: [], settled: [] }
   for (const worktree of args.workspaces) {
     if (worktree.isArchived) {
       continue
@@ -66,33 +70,30 @@ export function buildThreadRows(args: {
       args.liveStatusByWorktreeId.get(worktree.id),
       args.now
     )
-    const visible =
-      kind === 'open' ||
-      args.matches !== null ||
-      (kind === 'snoozed' && args.showSnoozed) ||
-      (kind === 'settled' && args.showSettled)
-    if (visible) {
-      byKey.set(key, { key, worktree, kind })
+    if (kind === 'open') {
+      open.set(key, { key, worktree, kind })
+    } else if (kind === 'snoozed') {
+      rows.snoozed.push({ key, worktree, kind, at: args.states[key]?.snoozedUntil })
+    } else if (kind === 'settled') {
+      rows.settled.push({ key, worktree, kind, at: args.states[key]?.settledAt })
     }
   }
-  const isPinned = (key: string): boolean => byKey.get(key)?.worktree.isPinned === true
+  rows.snoozed.sort((a, b) => (a.at ?? 0) - (b.at ?? 0))
+  rows.settled.sort((a, b) => (b.at ?? 0) - (a.at ?? 0))
+  const isPinned = (key: string): boolean => open.get(key)?.worktree.isPinned === true
   const orderingStates: ThreadStates = {}
-  for (const [key, row] of byKey) {
+  for (const [key, row] of open) {
     orderingStates[key] = {
       ...args.states[key],
       openedAt: args.states[key]?.openedAt ?? threadFallbackOpenedAt(row.worktree)
     }
   }
-  const ordered = orderThreadKeys([...byKey.keys()], orderingStates, isPinned)
-  const rows: ThreadRows = { pinned: [], rest: [], dimmed: [] }
-  for (const key of ordered) {
-    const row = byKey.get(key)
+  for (const key of orderThreadKeys([...open.keys()], orderingStates, isPinned)) {
+    const row = open.get(key)
     if (!row) {
       continue
     }
-    if (row.kind !== 'open') {
-      rows.dimmed.push(row)
-    } else if (args.matches === null && row.worktree.isPinned) {
+    if (args.matches === null && row.worktree.isPinned) {
       rows.pinned.push(row)
     } else {
       rows.rest.push(row)

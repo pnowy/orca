@@ -20,9 +20,7 @@ function worktree(id: string, overrides: Partial<Worktree> = {}): Worktree {
 const base = {
   liveStatusByWorktreeId: new Map(),
   now: 1_000,
-  matches: null,
-  showSnoozed: false,
-  showSettled: false
+  matches: null
 }
 
 describe('buildThreadRows', () => {
@@ -38,7 +36,7 @@ describe('buildThreadRows', () => {
     expect(opened.rest.map((row) => row.key)).toEqual([getWorktreeHostIdentity(main)])
   })
 
-  it('lists Orca-created worktrees, hides settled ones and splits pinned', () => {
+  it('splits open threads into pinned and rest, and settled ones into their own section', () => {
     const a = worktree('a', { createdAt: 5 })
     const b = worktree('b', { createdAt: 6, isPinned: true })
     const c = worktree('c', { createdAt: 7 })
@@ -49,12 +47,15 @@ describe('buildThreadRows', () => {
     })
     expect(rows.pinned.map((row) => row.worktree.id)).toEqual(['b'])
     expect(rows.rest.map((row) => row.worktree.id)).toEqual(['a'])
+    expect(rows.settled.map((row) => row.worktree.id)).toEqual(['c'])
   })
 
-  it('hides snoozed threads unless their agent needs input', () => {
+  it('moves snoozed threads threads to their section unless their agent needs input', () => {
     const a = worktree('a', { createdAt: 5 })
     const states = { [getWorktreeHostIdentity(a)]: { snoozedUntil: 2_000 } }
-    expect(buildThreadRows({ ...base, workspaces: [a], states }).rest).toHaveLength(0)
+    const rows = buildThreadRows({ ...base, workspaces: [a], states })
+    expect(rows.rest).toHaveLength(0)
+    expect(rows.snoozed.map((row) => row.at)).toEqual([2_000])
     const needsInput = buildThreadRows({
       ...base,
       workspaces: [a],
@@ -64,17 +65,21 @@ describe('buildThreadRows', () => {
     expect(needsInput.rest).toHaveLength(1)
   })
 
-  it('search includes settled matches as dimmed rows', () => {
+  it('search filters the settled section too', () => {
     const a = worktree('a', { createdAt: 5 })
     const b = worktree('b', { createdAt: 5 })
+    const c = worktree('c', { createdAt: 5 })
     const rows = buildThreadRows({
       ...base,
-      workspaces: [a, b],
-      states: { [getWorktreeHostIdentity(b)]: { settledAt: 9 } },
+      workspaces: [a, b, c],
+      states: {
+        [getWorktreeHostIdentity(b)]: { settledAt: 9 },
+        [getWorktreeHostIdentity(c)]: { settledAt: 9 }
+      },
       matches: new Set([getWorktreeHostIdentity(a), getWorktreeHostIdentity(b)])
     })
     expect(rows.rest.map((row) => row.worktree.id)).toEqual(['a'])
-    expect(rows.dimmed.map((row) => row.worktree.id)).toEqual(['b'])
+    expect(rows.settled.map((row) => row.worktree.id)).toEqual(['b'])
   })
 
   it('skips archived workspaces', () => {
