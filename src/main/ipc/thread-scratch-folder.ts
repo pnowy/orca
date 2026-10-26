@@ -4,17 +4,23 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { ipcMain } from 'electron'
 
-const THREAD_SCRATCH_ROOT_NAME = 'orca-threads'
+import type { Store } from '../persistence'
+import { getDefaultWorkspaceDir } from '../../shared/constants'
+
+const THREAD_SCRATCH_ROOT_NAME = 'threads'
 
 function localDateStamp(now: Date): string {
   const pad = (value: number): string => String(value).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
-/** `<home>/orca-threads/<date>-<id>`: visible, because agents write real files there. */
-export async function createThreadScratchFolder(now = new Date()): Promise<string> {
+/** `<workspace dir>/threads/<date>-<id>`, next to Orca's worktrees, because agents write real files there. */
+export async function createThreadScratchFolder(
+  workspaceDir: string,
+  now = new Date()
+): Promise<string> {
   const folder = join(
-    homedir(),
+    workspaceDir.trim() || getDefaultWorkspaceDir(homedir()),
     THREAD_SCRATCH_ROOT_NAME,
     `${localDateStamp(now)}-${randomBytes(3).toString('hex')}`
   )
@@ -22,6 +28,8 @@ export async function createThreadScratchFolder(now = new Date()): Promise<strin
   return folder
 }
 
-export function registerThreadScratchFolderHandler(): void {
-  ipcMain.handle('ui:createThreadScratchFolder', () => createThreadScratchFolder())
+export function registerThreadScratchFolderHandler(store: Pick<Store, 'getSettings'>): void {
+  ipcMain.handle('ui:createThreadScratchFolder', () =>
+    createThreadScratchFolder(store.getSettings().workspaceDir)
+  )
 }

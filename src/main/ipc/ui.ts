@@ -60,7 +60,7 @@ export function registerUIHandlers(
 ): void {
   store.onUIChanged((ui) => sendToTrustedUIRenderer('ui:stateChanged', ui))
 
-  registerThreadScratchFolderHandler()
+  registerThreadScratchFolderHandler(store)
   ipcMain.handle('ui:getJiraQuickFilters', () =>
     normalizeJiraQuickFilterState(store.getUI().jiraQuickFilterState)
   )
