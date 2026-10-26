@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/store'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import { isThreadOpen, topThreadOrder } from '../../../../../shared/threads/thread-state'
+import { getStoppedAgentWorktreeIds, getWorktreeIdsWithAgentPanes } from './thread-auto-settle'
 import { threadFallbackOpenedAt } from './thread-rows'
 import { useLiveAgentStatusByWorktreeId, useThreadWorkspaces } from './use-thread-list-model'
 
@@ -42,4 +43,47 @@ export function useThreadOpenObserver(enabled: boolean): void {
       order += 1
     }
   }, [enabled, liveStatusByWorktreeId, workspaces])
+}
+
+/**
+ * Settle an open thread when its last agent is stopped (pane closed or agent exited), like
+ * Projects mode drops an idle main checkout. Finished turns keep their entry and slept agents
+ * leave a resumable record, so both stay open; pinned threads are kept on purpose.
+ */
+export function useThreadAutoSettleObserver(enabled: boolean): void {
+  const workspaces = useThreadWorkspaces()
+  const agentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey)
+  const tabsByWorktree = useAppStore((s) => s.tabsByWorktree)
+  const withAgents = useMemo(
+    () => getWorktreeIdsWithAgentPanes(agentStatusByPaneKey, tabsByWorktree),
+    [agentStatusByPaneKey, tabsByWorktree]
+  )
+  const previousRef = useRef<ReadonlySet<string> | null>(null)
+
+  useEffect(() => {
+    if (!enabled) {
+      previousRef.current = null
+      return
+    }
+    const stopped = getStoppedAgentWorktreeIds(previousRef.current, withAgents)
+    previousRef.current = withAgents
+    if (stopped.length === 0) {
+      return
+    }
+    const { threadStates, updateThreadState, sleepingAgentSessionsByPaneKey } =
+      useAppStore.getState()
+    const sleeping = new Set(
+      Object.values(sleepingAgentSessionsByPaneKey ?? {}).map((record) => record.worktreeId)
+    )
+    const now = Date.now()
+    for (const worktree of workspaces) {
+      if (!stopped.includes(worktree.id) || worktree.isPinned || sleeping.has(worktree.id)) {
+        continue
+      }
+      const key = getWorktreeHostIdentity(worktree)
+      if (isThreadOpen(threadStates[key], threadFallbackOpenedAt(worktree))) {
+        updateThreadState(key, { settledAt: now, snoozedUntil: undefined })
+      }
+    }
+  }, [enabled, withAgents, workspaces])
 }
