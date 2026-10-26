@@ -72,7 +72,11 @@ export const UI_STATE_DISPOSITIONS = {
     38,
     'Filters belong to the Jira host, not a moved workspace.'
   ),
-  taskResumeState: notApplicableDisposition(38)
+  taskResumeState: notApplicableDisposition(38),
+  threadStates: notApplicableDisposition(
+    38,
+    'Keyed by host identity; a moved workspace reopens as a thread when an agent runs there.'
+  )
 } as const satisfies Partial<Record<keyof PersistedUIState, WslMoveFieldDisposition>>
 
 export const UI_STATE_GLOBAL_FIELDS = [
@@ -186,7 +190,8 @@ export const UI_STATE_GLOBAL_FIELDS = [
   '_workspaceStatusesDefaultVisualsMigrated',
   '_workspaceStatusesDefaultWorkflowMigrated',
   '_workspaceStatusesReorderedDefaultRepaired',
-  '_zcodeStatusBarDefaultAdded'
+  '_zcodeStatusBarDefaultAdded',
+  'sidebarLayout'
 ] as const satisfies readonly (keyof PersistedUIState)[]
 
 // Exhaustiveness prevents moves stranding newly added workspace state.

@@ -1,3 +1,8 @@
+import type {
+  SidebarLayout,
+  ThreadState,
+  ThreadStates
+} from '../../../../../shared/threads/thread-state'
 import type { PersistedUIState } from '../../../../../shared/persisted-ui-state-types'
 import type { BrowserDevToolsDockLayout } from '../../../../../shared/browser-devtools-dock'
 import type {
@@ -88,6 +93,20 @@ export type UISlicePreferences = {
   setAgentsReadFilter: (v: ThreadReadFilter) => void
   agentsGroupBy: ActivityGroupBy
   setAgentsGroupBy: (v: ActivityGroupBy) => void
+  sidebarLayout: SidebarLayout
+  setSidebarLayout: (layout: SidebarLayout) => void
+  threadStates: ThreadStates
+  updateThreadState: (
+    key: string,
+    patch: Partial<Record<keyof ThreadState, number | undefined>>
+  ) => void
+  /** Apply a whole-list rewrite (reorder) in one persisted write. */
+  replaceThreadStates: (states: ThreadStates) => void
+  /** Session-only Threads options. */
+  threadsShowSnoozed: boolean
+  setThreadsShowSnoozed: (v: boolean) => void
+  threadsShowSettled: boolean
+  setThreadsShowSettled: (v: boolean) => void
   collapsedGroups: Set<string>
   toggleCollapsedGroup: (key: string) => void
   worktreeCardProperties: WorktreeCardProperty[]

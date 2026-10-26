@@ -30,6 +30,12 @@ export function registerWorkspaceShortcutIpcBridge(unsubs: (() => void)[]): void
   unsubs.push(
     window.api.ui.onOpenNewWorkspace(() => {
       const store = useAppStore.getState()
+      if (store.sidebarLayout === 'threads') {
+        if (store.activeModal !== 'new-thread' && store.activeModal !== 'new-workspace-composer') {
+          store.openModal('new-thread')
+        }
+        return
+      }
       openNewWorkspaceFromShortcut(store)
     })
   )

@@ -153,6 +153,20 @@ export const UiUpdateFields = z
     agentsShowSearch: z.boolean().optional(),
     agentsReadFilter: z.enum(THREAD_READ_FILTER_VALUES).optional(),
     agentsGroupBy: z.enum(ACTIVITY_GROUP_BY_VALUES).optional(),
+    sidebarLayout: z.enum(['projects', 'threads']).optional(),
+    threadStates: z
+      .record(
+        z.string(),
+        z
+          .object({
+            openedAt: z.number().finite().optional(),
+            settledAt: z.number().finite().optional(),
+            snoozedUntil: z.number().finite().optional(),
+            order: z.number().finite().optional()
+          })
+          .strict()
+      )
+      .optional(),
     workspaceHostOrder: z.array(z.string()).optional(),
     automationHostFilter: z
       .union([

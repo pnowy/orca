@@ -8,6 +8,7 @@ import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import { translate } from '@/i18n/i18n'
 import { RecoverableRenderErrorBoundary } from '../components/error-boundaries/RecoverableRenderErrorBoundary'
 import NewWorkspaceComposerModal from '../components/NewWorkspaceComposerModal'
+import NewThreadDialog from '../components/sidebar/threads/NewThreadDialog'
 import { CrashReportDialog } from '../components/crash-report/CrashReportDialog'
 import { MarkdownTemplatePicker } from '../components/editor/MarkdownTemplatePicker'
 import RecentTabSwitcher from '../components/tab-bar/RecentTabSwitcher'
@@ -180,6 +181,11 @@ export function AppRootSurfaces(props: {
       {activeModal === 'new-workspace-composer' ? (
         <ModalBoundary boundaryId="modal.new-workspace-composer" resetKey>
           <NewWorkspaceComposerModal />
+        </ModalBoundary>
+      ) : null}
+      {activeModal === 'new-thread' ? (
+        <ModalBoundary boundaryId="modal.new-thread" resetKey>
+          <NewThreadDialog />
         </ModalBoundary>
       ) : null}
       <Suspense fallback={null}>

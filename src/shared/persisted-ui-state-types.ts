@@ -29,6 +29,7 @@ import type {
 import type { WorkspaceStatusDefinition } from './worktree/types'
 import type { PersistedAutomationHostFilter } from './automation-host-filter'
 import type { PendingRuntimeRepoRemoval } from './pending-runtime-repo-removal'
+import type { SidebarLayout, ThreadStates } from './threads/thread-state'
 
 export type PersistedUIState = {
   /** Paired-server project removals still owed to their server; optional so older builds ignore it. */
@@ -104,6 +105,10 @@ export type PersistedUIState = {
   agentsReadFilter?: ThreadReadFilter
   /** Agents-view thread grouping. Absent means 'status'. */
   agentsGroupBy?: ActivityGroupBy
+  /** Workspace sidebar layout. Absent means 'projects'. */
+  sidebarLayout?: SidebarLayout
+  /** Threads-layout state per workspace host identity. */
+  threadStates?: ThreadStates
   collapsedGroups: string[]
   uiZoomLevel: number
   editorFontZoomLevel: number

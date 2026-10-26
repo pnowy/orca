@@ -78,6 +78,8 @@ export type UiCommandEventApi = {
   /** Unlike web set, rejects transport failures so the diff writer retries unacknowledged patches. */
   setWithAck?: (args: Partial<PersistedUIState>) => Promise<void>
   recordFeatureInteraction: (id: FeatureInteractionId) => Promise<PersistedUIState>
+  /** Desktop-only: makes a fresh no-project thread folder and returns its path. */
+  createThreadScratchFolder?: () => Promise<string>
   onStateChanged: (callback: (ui: PersistedUIState) => void) => () => void
   onOpenSettings: (callback: () => void) => () => void
   consumePendingOpenSettings: () => Promise<boolean>

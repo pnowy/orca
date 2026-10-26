@@ -17,6 +17,7 @@ export const uiStateAndMenuCommandsApi = {
   set: (args) => ipcRenderer.invoke('ui:set', args),
   setWithAck: (args) => ipcRenderer.invoke('ui:set', args),
   recordFeatureInteraction: (id) => ipcRenderer.invoke('ui:recordFeatureInteraction', id),
+  createThreadScratchFolder: () => ipcRenderer.invoke('ui:createThreadScratchFolder'),
   onStateChanged: (callback: (ui: PersistedUIState) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, ui: PersistedUIState): void => callback(ui)
     ipcRenderer.on('ui:stateChanged', listener)
