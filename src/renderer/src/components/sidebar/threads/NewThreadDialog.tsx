@@ -11,6 +11,7 @@ import {
   CommandList
 } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -157,6 +158,7 @@ function ThreadComposer({
   const { agents, defaultAgent } = useOfferedAgents()
   const [agent, setAgent] = useState<TuiAgent | null>(defaultAgent)
   const [prompt, setPrompt] = useState('')
+  const [name, setName] = useState('')
   const isGit = target.kind === 'project' && isGitRepoKind(target.repo)
   const [workspace, setWorkspace] = useState<WorkspaceChoice>(isGit ? 'worktree' : 'checkout')
   const [submitting, setSubmitting] = useState(false)
@@ -169,17 +171,17 @@ function ThreadComposer({
     setSubmitting(true)
     let ok: boolean
     if (target.kind === 'none') {
-      ok = await launchNoProjectThread({ agent, prompt })
+      ok = await launchNoProjectThread({ agent, prompt, name })
     } else if (workspace === 'checkout') {
-      ok = launchThreadOnCheckout({ repoId: target.repo.id, agent, prompt })
+      ok = launchThreadOnCheckout({ repoId: target.repo.id, agent, prompt, name })
     } else {
-      ok = await launchThreadOnNewWorktree({ repoId: target.repo.id, agent, prompt })
+      ok = await launchThreadOnNewWorktree({ repoId: target.repo.id, agent, prompt, name })
     }
     setSubmitting(false)
     if (ok) {
       onDone()
     }
-  }, [agent, onDone, prompt, submitting, target, workspace])
+  }, [agent, name, onDone, prompt, submitting, target, workspace])
 
   const title =
     target.kind === 'project'
@@ -216,6 +218,21 @@ function ThreadComposer({
           ) : null}
         </div>
       </div>
+      <Input
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            void submit()
+          }
+        }}
+        placeholder={translate(
+          'components.sidebar.threads.namePlaceholder',
+          'Thread name (optional, otherwise named from the prompt)'
+        )}
+        aria-label={translate('components.sidebar.threads.nameLabel', 'Thread name')}
+      />
       <Textarea
         autoFocus
         value={prompt}

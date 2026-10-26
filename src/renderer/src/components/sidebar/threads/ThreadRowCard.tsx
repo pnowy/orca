@@ -16,7 +16,11 @@ import type { Repo } from '../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import type { DashboardAgentRow } from '@/components/dashboard/useDashboardData'
+import { useAppStore } from '@/store'
 import WorktreeContextMenu from '../WorktreeContextMenu'
+import { WorktreeTitleInlineRename } from '../WorktreeTitleInlineRename'
+import { shouldBeginWorktreeRename } from '../worktree-card-model'
+import { renameThread } from './thread-launch'
 import { useWorktreeAgentRows } from '../useWorktreeAgentRows'
 import {
   buildSummaryAgentGroups,
@@ -171,6 +175,9 @@ export const ThreadRowCard = React.memo(function ThreadRowCard({
   onDragEnd
 }: ThreadRowCardProps): React.JSX.Element {
   const [snoozeMenuOpen, setSnoozeMenuOpen] = useState(false)
+  const [renaming, setRenaming] = useState(false)
+  const renamingRequest = useAppStore((s) => s.renamingWorktreeId)
+  const setRenamingRequest = useAppStore((s) => s.setRenamingWorktreeId)
   const agents = useWorktreeAgentRows(worktree.id)
   const projectName = useThreadProjectName(worktree, repo)
   const branch = threadBranchLabel(worktree)
@@ -185,7 +192,7 @@ export const ThreadRowCard = React.memo(function ThreadRowCard({
         )}
         data-worktree-card-surface="true"
         data-worktree-card-active={isActive ? 'primary' : undefined}
-        draggable={draggable}
+        draggable={draggable && !renaming}
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = 'move'
           event.dataTransfer.setData('text/plain', worktree.id)
@@ -206,11 +213,15 @@ export const ThreadRowCard = React.memo(function ThreadRowCard({
             onOpenChange={setSnoozeMenuOpen}
           />
         </div>
-        <div
-          className={cn('truncate text-sm text-foreground', worktree.isUnread && 'font-semibold')}
-        >
-          {threadTitle(worktree)}
-        </div>
+        <WorktreeTitleInlineRename
+          displayName={threadTitle(worktree)}
+          showUnreadEmphasis={worktree.isUnread}
+          className="text-sm leading-5"
+          onEditingChange={setRenaming}
+          onRename={(displayName) => renameThread(worktree, displayName)}
+          beginEditing={shouldBeginWorktreeRename(renamingRequest, worktree.id, undefined)}
+          onBeginEditingConsumed={() => setRenamingRequest(null)}
+        />
         <div className="flex min-h-4 min-w-0 items-center gap-1.5 text-xs text-muted-foreground/70">
           <span className="min-w-0 flex-1 truncate">{branch}</span>
           <ThreadRowAgentIcons agents={agents} />

@@ -34,6 +34,17 @@ function openThread(worktree: Worktree): void {
   })
 }
 
+/** Thread title is the workspace display name, for git worktrees and folder workspaces alike. */
+export async function renameThread(worktree: Worktree, displayName: string): Promise<void> {
+  await useAppStore
+    .getState()
+    .updateWorktreeMeta(
+      worktree.id,
+      { displayName },
+      { executionHostId: worktree.hostId ?? LOCAL_EXECUTION_HOST_ID }
+    )
+}
+
 function startAgent(worktreeId: string, agent: TuiAgent, prompt: string): void {
   const trimmed = prompt.trim()
   const result = launchAgentInNewTab({
@@ -53,6 +64,7 @@ export function launchThreadOnCheckout(args: {
   repoId: string
   agent: TuiAgent
   prompt: string
+  name?: string
 }): boolean {
   const worktree = findMainWorktree(args.repoId)
   if (!worktree) {
@@ -60,6 +72,10 @@ export function launchThreadOnCheckout(args: {
       translate('components.sidebar.threads.noCheckout', 'This project has no checkout yet.')
     )
     return false
+  }
+  const name = args.name?.trim()
+  if (name && name !== worktree.displayName) {
+    renameThread(worktree, name).catch(console.error)
   }
   openThread(worktree)
   activateAndRevealWorkspace(worktree.id, {
@@ -75,9 +91,11 @@ export async function launchThreadOnNewWorktree(args: {
   repoId: string
   agent: TuiAgent
   prompt: string
+  name?: string
 }): Promise<boolean> {
   const state = useAppStore.getState()
   const name = getSuggestedCreatureName(selectWorktreesByRepo(state))
+  const displayName = args.name?.trim() || undefined
   try {
     const result = await state.createWorktree(
       args.repoId,
@@ -86,7 +104,7 @@ export async function launchThreadOnNewWorktree(args: {
       'inherit',
       undefined,
       'sidebar',
-      undefined,
+      displayName,
       undefined,
       undefined,
       undefined,
@@ -97,8 +115,8 @@ export async function launchThreadOnNewWorktree(args: {
       undefined,
       undefined,
       undefined,
-      // Let the first agent message name the thread, as T3 titles a thread from its prompt.
-      args.prompt.trim().length > 0
+      // Without a given name, the first agent message names the thread, as T3 titles it from the prompt.
+      !displayName && args.prompt.trim().length > 0
     )
     openThread(result.worktree)
     activateAndRevealWorkspace(result.worktree.id, {
@@ -135,7 +153,9 @@ async function ensureNoProjectGroupId(): Promise<string | null> {
 export async function launchNoProjectThread(args: {
   agent: TuiAgent
   prompt: string
+  name?: string
 }): Promise<boolean> {
+  const givenName = args.name?.trim()
   const createFolder = window.api.ui.createThreadScratchFolder
   if (!createFolder) {
     toast.error(
@@ -155,10 +175,10 @@ export async function launchNoProjectThread(args: {
     const folder = await useAppStore.getState().createFolderWorkspace(
       {
         projectGroupId: groupId,
-        name: translate('components.sidebar.threads.untitled', 'New thread'),
+        name: givenName || translate('components.sidebar.threads.untitled', 'New thread'),
         folderPath,
         createdWithAgent: args.agent,
-        pendingFirstAgentMessageRename: args.prompt.trim().length > 0
+        pendingFirstAgentMessageRename: !givenName && args.prompt.trim().length > 0
       },
       { runtimeEnvironmentId: null }
     )

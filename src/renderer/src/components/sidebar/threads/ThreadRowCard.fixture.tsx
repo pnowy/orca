@@ -67,3 +67,12 @@ export const list = defineFixture({
     </div>
   )
 })
+
+export const renaming = defineFixture({
+  ...list,
+  interact: async (frame) => {
+    frame
+      .querySelector('[data-worktree-title-inline-rename]')
+      ?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+  }
+})
