@@ -12,7 +12,7 @@ import type { ThreadRow } from './thread-rows'
 import { ThreadCompactRow } from './ThreadCompactRow'
 import { ThreadRowCard } from './ThreadRowCard'
 import { useThreadListModel } from './use-thread-list-model'
-import { useThreadOpenObserver } from './use-thread-open-observer'
+import { useThreadAutoSettleObserver, useThreadOpenObserver } from './use-thread-open-observer'
 
 type DropTarget = { key: string; position: 'before' | 'after' }
 
@@ -59,6 +59,7 @@ function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.El
 
 export default function ThreadList(): React.JSX.Element {
   useThreadOpenObserver(true)
+  useThreadAutoSettleObserver(true)
   const [query, setQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
   const { rows } = useThreadListModel({ query })
