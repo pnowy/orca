@@ -7,9 +7,11 @@ import { getAgentStatusEpochNow } from '@/lib/agent-status-epoch-clock'
 import { getLiveAgentStatusByWorktreeId } from '@/lib/worktree-activity-state'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import type { LiveAgentWorktreeStatus } from '../../../../../shared/sidebar-list/workspace-activity-facts'
-import { nextSnoozeExpiry } from '../../../../../shared/threads/thread-state'
+import { nextSnoozeExpiry, type ThreadStates } from '../../../../../shared/threads/thread-state'
 import { matchWorkspaceBoardWorktrees } from '../workspace-kanban-search'
 import { buildThreadRows, type ThreadRows } from './thread-rows'
+
+const EMPTY_THREAD_STATES: ThreadStates = {}
 
 /** Every git worktree and folder workspace this window knows, as cards render them. */
 export function useThreadWorkspaces(): Worktree[] {
@@ -17,8 +19,8 @@ export function useThreadWorkspaces(): Worktree[] {
   const folderWorkspaces = useAppStore((s) => selectFolderWorkspaces(s))
   return useMemo(
     () => [
-      ...Object.values(worktreesByRepo).flat(),
-      ...folderWorkspaces.map((folder) => getFolderWorkspaceWorktree(folder))
+      ...Object.values(worktreesByRepo ?? {}).flat(),
+      ...(folderWorkspaces ?? []).map((folder) => getFolderWorkspaceWorktree(folder))
     ],
     [worktreesByRepo, folderWorkspaces]
   )
@@ -58,7 +60,7 @@ export function useThreadListModel(args: {
   showSettled: boolean
 }): { rows: ThreadRows; workspaces: Worktree[] } {
   const workspaces = useThreadWorkspaces()
-  const states = useAppStore((s) => s.threadStates)
+  const states = useAppStore((s) => s.threadStates ?? EMPTY_THREAD_STATES)
   const repos = useAppStore((s) => s.repos)
   const liveStatusByWorktreeId = useLiveAgentStatusByWorktreeId()
   const clockNow = useSnoozeClock(states)

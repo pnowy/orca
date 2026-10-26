@@ -24,7 +24,6 @@ import { SeveredTerminalDaemonBanner } from './SeveredTerminalDaemonBanner'
 import { StalledTerminalDaemonBanner } from './StalledTerminalDaemonBanner'
 import { StartupWorktreeRefreshStatus } from './StartupWorktreeRefreshStatus'
 import ThreadList from './threads/ThreadList'
-import { useThreadOpenObserver } from './threads/use-thread-open-observer'
 
 // Load the shared Activity badge/list pipeline after the sidebar shell.
 const SidebarAgentsList = lazyWithRetry(() => import('./SidebarAgentsList'))
@@ -72,7 +71,6 @@ function Sidebar({
   const settings = useAppStore((s) => s.settings)
   const sidebarBody = useAppStore((s) => s.sidebarBody ?? 'workspaces')
   const sidebarLayout = useAppStore((s) => s.sidebarLayout)
-  useThreadOpenObserver(sidebarLayout === 'threads')
   const showAgentDashboard = settings?.experimentalAgentDashboardPopout === true
   const agentDashboardDrawerOpen = useAppStore((s) => s.agentDashboardDrawerOpen)
   const setAgentDashboardDrawerOpen = useAppStore((s) => s.setAgentDashboardDrawerOpen)
