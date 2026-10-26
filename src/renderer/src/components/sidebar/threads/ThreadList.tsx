@@ -8,8 +8,8 @@ import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
 import { isActiveSidebarWorkspace } from '../../../../../shared/sidebar-list/active-workspace'
 import { reorderThread } from '../../../../../shared/threads/thread-state'
-import WorktreeCard from '../WorktreeCard'
 import type { ThreadRow } from './thread-rows'
+import { ThreadRowCard } from './ThreadRowCard'
 import { useThreadListModel } from './use-thread-list-model'
 import { useThreadOpenObserver } from './use-thread-open-observer'
 
@@ -17,7 +17,7 @@ type DropTarget = { key: string; position: 'before' | 'after' }
 
 function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="px-3 pb-1 pt-2 text-[11px] font-medium text-muted-foreground select-none">
+    <div className="px-3 pb-1 pt-2 text-2xs font-medium text-muted-foreground select-none">
       {children}
     </div>
   )
@@ -127,15 +127,13 @@ export default function ThreadList(): React.JSX.Element {
             )}
           />
         ) : null}
-        <WorktreeCard
+        <ThreadRowCard
           worktree={row.worktree}
           repo={repoMap.get(row.worktree.repoId)}
           isActive={isActive}
-          showProjectName
-          inPinnedSection={row.worktree.isPinned}
-          nativeDragEnabled={draggable}
-          onCardDragStart={() => setDraggingKey(row.key)}
-          onCardDragEnd={() => {
+          draggable={draggable}
+          onDragStart={() => setDraggingKey(row.key)}
+          onDragEnd={() => {
             setDraggingKey(null)
             setDropTarget(null)
           }}
@@ -187,13 +185,13 @@ export default function ThreadList(): React.JSX.Element {
         {rows.pinned.length > 0 ? (
           <>
             <SectionLabel>{translate('components.sidebar.threads.pinned', 'Pinned')}</SectionLabel>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {rows.pinned.map((row) => renderRow(row, !searching))}
             </div>
           </>
         ) : null}
         {rows.rest.length > 0 ? (
-          <div className={cn('flex flex-col gap-0.5', rows.pinned.length > 0 && 'mt-2')}>
+          <div className={cn('flex flex-col gap-1', rows.pinned.length > 0 && 'mt-2')}>
             {rows.rest.map((row) => renderRow(row, !searching))}
           </div>
         ) : null}
@@ -202,7 +200,7 @@ export default function ThreadList(): React.JSX.Element {
             <SectionLabel>
               {translate('components.sidebar.threads.snoozedAndSettled', 'Snoozed and settled')}
             </SectionLabel>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {rows.dimmed.map((row) => renderRow(row, false))}
             </div>
           </>
