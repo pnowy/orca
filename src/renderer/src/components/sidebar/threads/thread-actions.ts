@@ -30,3 +30,12 @@ export function snoozeThread(key: string, option: ThreadSnoozeOption): void {
 export function reopenThread(key: string): void {
   useAppStore.getState().updateThreadState(key, { openedAt: Date.now(), snoozedUntil: undefined })
 }
+
+/** Unsettling picks the conversation back up where it stopped. */
+export function reopenSettledThread(
+  worktree: Worktree,
+  resumeLatest: ((worktree: Worktree) => void) | null
+): void {
+  reopenThread(getWorktreeHostIdentity(worktree))
+  resumeLatest?.(worktree)
+}
