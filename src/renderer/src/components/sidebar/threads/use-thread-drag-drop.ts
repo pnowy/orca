@@ -2,7 +2,8 @@ import type React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useAppStore } from '@/store'
 import { reorderThread } from '../../../../../shared/threads/thread-state'
-import { reopenThread, settleThread, snoozeThread } from './thread-actions'
+import { reopenSettledThread, reopenThread, settleThread, snoozeThread } from './thread-actions'
+import type { Worktree } from '../../../../../shared/worktree/types'
 import type { ThreadRow, ThreadRows } from './thread-rows'
 
 type ThreadSection = keyof ThreadRows
@@ -19,7 +20,10 @@ function sameTarget(a: ThreadDropTarget | null, b: ThreadDropTarget): boolean {
 }
 
 /** Drag between sections: crossing Pinned pins, dropping in Snoozed/Settled snoozes/settles, dropping back reopens. */
-export function useThreadDragDrop(rows: ThreadRows): {
+export function useThreadDragDrop(
+  rows: ThreadRows,
+  resumeLatest: ((worktree: Worktree) => void) | null
+): {
   draggingKey: string | null
   dropTarget: ThreadDropTarget | null
   startDrag: (key: string) => void
@@ -86,7 +90,9 @@ export function useThreadDragDrop(rows: ThreadRows): {
       if (into?.row.key === row.key) {
         return
       }
-      if (section === 'snoozed' || section === 'settled') {
+      if (section === 'settled') {
+        reopenSettledThread(row.worktree, resumeLatest)
+      } else if (section === 'snoozed') {
         reopenThread(row.key)
       }
       const intoPinned = into?.section === 'pinned'
@@ -108,6 +114,7 @@ export function useThreadDragDrop(rows: ThreadRows): {
       dropTarget,
       rowByKey,
       rows,
+      resumeLatest,
       endDrag,
       replaceThreadStates,
       setWorktreesPinnedAndReveal

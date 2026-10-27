@@ -21,6 +21,7 @@ import { useAiVaultPanelSearch } from '../../right-sidebar/use-ai-vault-search'
 import { useAiVaultPanelSessionResume } from '../../right-sidebar/use-ai-vault-panel-session-resume'
 import { useAiVaultSessionLaunchActions } from '../../right-sidebar/ai-vault-session-launch-actions'
 import { useAiVaultOriginalPaneActions } from '../../right-sidebar/ai-vault-original-pane-actions'
+import { getWorktreeIdsWithAgentPanes } from './thread-auto-settle'
 
 export type ThreadHistoryRow = {
   session: AiVaultSession
@@ -41,6 +42,7 @@ export function useThreadHistory(query: string): {
   searchNotReady: boolean
   historyLoading: boolean
   resume: (row: ThreadHistoryRow) => void
+  resumeLatest: (worktree: Worktree) => void
 } {
   const repos = useRepos()
   const allWorktrees = useAllWorktrees()
@@ -155,6 +157,23 @@ export function useThreadHistory(query: string): {
       handleResume(row.session, getSessionResumeState(row.session).worktreeId ?? row.worktree.id),
     [handleResume, getSessionResumeState]
   )
+  const resumeLatest = useCallback(
+    (worktree: Worktree) => {
+      if (hasAgentSession(worktree.id)) {
+        return
+      }
+      const latest = history
+        .filter((row) => row.worktree.id === worktree.id)
+        .reduce<ThreadHistoryRow | null>(
+          (best, row) => (!best || row.session.modifiedAt > best.session.modifiedAt ? row : best),
+          null
+        )
+      if (latest) {
+        resume(latest)
+      }
+    },
+    [history, resume]
+  )
 
   return {
     history,
@@ -163,8 +182,22 @@ export function useThreadHistory(query: string): {
     searchLoading: search.loading,
     searchNotReady: notReady || search.needsLocalConsent,
     historyLoading: list.loading,
-    resume
+    resume,
+    resumeLatest
   }
+}
+
+/** A live or sleeping agent already holds the conversation; resuming would duplicate it. */
+function hasAgentSession(worktreeId: string): boolean {
+  const state = useAppStore.getState()
+  return (
+    getWorktreeIdsWithAgentPanes(state.agentStatusByPaneKey, state.tabsByWorktree).has(
+      worktreeId
+    ) ||
+    Object.values(state.sleepingAgentSessionsByPaneKey ?? {}).some(
+      (record) => record.worktreeId === worktreeId
+    )
+  )
 }
 
 /** Threads search turns on the local transcript index the first time it is needed. */

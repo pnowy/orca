@@ -11,7 +11,8 @@ import { translate } from '@/i18n/i18n'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import { isThreadOpen, type ThreadSnoozeOption } from '../../../../../shared/threads/thread-state'
-import { reopenThread, settleThread, snoozeThread } from './thread-actions'
+import { reopenSettledThread, settleThread, snoozeThread } from './thread-actions'
+import { useThreadResume } from './thread-resume-context'
 import { threadFallbackOpenedAt } from './thread-rows'
 
 export const THREAD_SNOOZE_OPTIONS: { option: ThreadSnoozeOption; label: () => string }[] = [
@@ -47,6 +48,7 @@ export function ThreadMenuItems({
       !isThreadOpen(s.threadStates?.[key], threadFallbackOpenedAt(worktree))
   )
   const updateThreadState = useAppStore((s) => s.updateThreadState)
+  const resumeLatest = useThreadResume()
   if (!threadsLayout) {
     return null
   }
@@ -76,7 +78,10 @@ export function ThreadMenuItems({
         </DropdownMenuItem>
       ) : null}
       {settled ? (
-        <DropdownMenuItem disabled={disabled} onSelect={() => reopenThread(key)}>
+        <DropdownMenuItem
+          disabled={disabled}
+          onSelect={() => reopenSettledThread(worktree, resumeLatest)}
+        >
           <RotateCcw className="size-3.5" />
           {translate('components.sidebar.threads.reopen', 'Reopen')}
         </DropdownMenuItem>
