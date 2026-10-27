@@ -39,13 +39,13 @@ function CollapsibleSectionHeader({
       type="button"
       className={cn(
         'flex w-full items-center gap-2 px-3 pb-1 pt-3 text-xs outline-none select-none focus-visible:ring-1 focus-visible:ring-ring',
-        accent ? 'text-blue-500' : 'text-muted-foreground'
+        accent ? 'text-callout-note' : 'text-muted-foreground'
       )}
       aria-expanded={!collapsed}
       onClick={onToggle}
     >
       <span className="shrink-0">{label}</span>
-      <span className={cn('h-px flex-1', accent ? 'bg-blue-500/40' : 'bg-border')} />
+      <span className={cn('h-px flex-1', accent ? 'bg-callout-note/40' : 'bg-border')} />
       <ChevronDown
         className={cn('size-3.5 shrink-0 transition-transform', collapsed && '-rotate-90')}
       />
