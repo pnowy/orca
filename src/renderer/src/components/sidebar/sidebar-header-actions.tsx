@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import { FolderPlus, Plus } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatOptionalPrimaryShortcutLabel } from '@/hooks/useShortcutLabel'
 import { translate } from '@/i18n/i18n'
@@ -96,7 +97,14 @@ export function SidebarHeaderActions({
   const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
   return (
     <div className="flex shrink-0 items-center gap-1" data-sidebar-header-actions="">
-      <div ref={activityOptionsTarget} className="flex size-6 shrink-0 items-center">
+      {/* Threads has no workspace options; the slot stays only as the agents-view portal target. */}
+      <div
+        ref={activityOptionsTarget}
+        className={cn(
+          'flex size-6 shrink-0 items-center',
+          threadsLayout && !agentsViewActive && 'hidden'
+        )}
+      >
         {agentsViewActive || threadsLayout ? null : (
           <SidebarWorkspaceOptionsMenu
             preserveWorkspaceBoardOpen
