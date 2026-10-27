@@ -2,8 +2,9 @@ import { useAppStore } from '@/store'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import { snoozeUntil, type ThreadSnoozeOption } from '../../../../../shared/threads/thread-state'
+import { parseAgentStatusPaneIdentity } from '../../../../../shared/agent-status-worktree-attribution'
 
-/** Settling also unpins: a pinned thread would otherwise stay listed forever. */
+/** Settling also unpins (a pinned thread would otherwise stay listed forever) and stops its agents. */
 export function settleThread(worktree: Worktree): void {
   const state = useAppStore.getState()
   state.updateThreadState(getWorktreeHostIdentity(worktree), {
@@ -12,6 +13,27 @@ export function settleThread(worktree: Worktree): void {
   })
   if (worktree.isPinned) {
     state.setWorktreesPinnedAndReveal([worktree], false)
+  }
+  closeAgentTabs(worktree.id)
+}
+
+/** Closed agents land in History, so reopening the thread resumes them. */
+function closeAgentTabs(worktreeId: string): void {
+  const state = useAppStore.getState()
+  const agentTerminalTabIds = new Set<string>()
+  for (const entry of Object.values(state.agentStatusByPaneKey ?? {})) {
+    const tabId = parseAgentStatusPaneIdentity(entry.paneKey)?.tabId
+    if (tabId) {
+      agentTerminalTabIds.add(tabId)
+    }
+  }
+  const agentTabs = (state.unifiedTabsByWorktree[worktreeId] ?? []).filter(
+    (tab) =>
+      tab.contentType === 'agent-session' ||
+      (tab.contentType === 'terminal' && agentTerminalTabIds.has(tab.entityId))
+  )
+  for (const tab of agentTabs) {
+    state.closeUnifiedTab(tab.id)
   }
 }
 
