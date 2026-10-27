@@ -12,6 +12,9 @@ import { ThreadCompactRow } from './ThreadCompactRow'
 import { ThreadRowCard } from './ThreadRowCard'
 import { useThreadListModel } from './use-thread-list-model'
 import { useThreadDragDrop } from './use-thread-drag-drop'
+import { useThreadHistory } from './use-thread-history'
+import { ThreadHistoryRow } from './ThreadHistoryRow'
+import type { ThreadHistoryRow as ThreadHistoryRowData } from './use-thread-history'
 import { useThreadAutoSettleObserver, useThreadOpenObserver } from './use-thread-open-observer'
 
 const SETTLED_PAGE_SIZE = 10
@@ -49,6 +52,27 @@ function CollapsibleSectionHeader({
   )
 }
 
+function ShowMoreButton({
+  count,
+  onClick
+}: {
+  count: number
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <div className="px-1.5">
+      <button
+        type="button"
+        className="flex h-8 w-full items-center gap-2 rounded-lg px-2.5 text-sm text-muted-foreground outline-none worktree-sidebar-card-hover focus-visible:ring-1 focus-visible:ring-ring"
+        onClick={onClick}
+      >
+        <Plus className="size-3.5 opacity-60" />
+        {translate('components.sidebar.threads.showMore', 'Show {{count}} more', { count })}
+      </button>
+    </div>
+  )
+}
+
 function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <div className="px-3 pb-1 pt-2 text-2xs font-medium text-muted-foreground select-none">
@@ -68,6 +92,10 @@ export default function ThreadList(): React.JSX.Element {
   const settledCollapsed = useAppStore((s) => s.threadsSettledCollapsed)
   const setSettledCollapsed = useAppStore((s) => s.setThreadsSettledCollapsed)
   const [settledLimit, setSettledLimit] = useState(SETTLED_PAGE_SIZE)
+  const historyCollapsed = useAppStore((s) => s.threadsHistoryCollapsed)
+  const setHistoryCollapsed = useAppStore((s) => s.setThreadsHistoryCollapsed)
+  const [historyLimit, setHistoryLimit] = useState(SETTLED_PAGE_SIZE)
+  const threadHistory = useThreadHistory(query)
   const repos = useAppStore((s) => s.repos)
   const repoMap = useMemo(() => getRepoMapFromState({ repos }), [repos])
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
@@ -149,6 +177,18 @@ export default function ThreadList(): React.JSX.Element {
   // A search shows every settled match; paging only trims the idle list.
   const visibleSettled = searching ? rows.settled : rows.settled.slice(0, settledLimit)
   const hiddenSettledCount = rows.settled.length - visibleSettled.length
+  const visibleHistory = threadHistory.history.slice(0, historyLimit)
+  const hiddenHistoryCount = threadHistory.history.length - visibleHistory.length
+
+  const renderHistoryRow = (row: ThreadHistoryRowData): React.JSX.Element => (
+    <div key={row.session.id} className="px-1.5">
+      <ThreadHistoryRow
+        row={row}
+        repo={repoMap.get(row.worktree.repoId)}
+        onResume={threadHistory.resume}
+      />
+    </div>
+  )
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-sidebar-threads-list="">
@@ -182,19 +222,15 @@ export default function ThreadList(): React.JSX.Element {
             onDragOver={dragOver({ kind: 'open' })}
             onDrop={drop}
           >
-            {empty ? (
+            {empty && !searching ? (
               <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
                 <p className="text-xs text-muted-foreground">
-                  {searching
-                    ? translate('components.sidebar.threads.noMatches', 'No threads match.')
-                    : translate('components.sidebar.threads.empty', 'No open threads.')}
+                  {translate('components.sidebar.threads.empty', 'No open threads.')}
                 </p>
-                {searching ? null : (
-                  <Button size="sm" variant="outline" onClick={() => openModal('new-thread')}>
-                    <Plus className="size-3.5" />
-                    {translate('components.sidebar.threads.newThread', 'New thread')}
-                  </Button>
-                )}
+                <Button size="sm" variant="outline" onClick={() => openModal('new-thread')}>
+                  <Plus className="size-3.5" />
+                  {translate('components.sidebar.threads.newThread', 'New thread')}
+                </Button>
               </div>
             ) : null}
             {rows.pinned.length > 0 ? (
@@ -250,22 +286,34 @@ export default function ThreadList(): React.JSX.Element {
                   <>
                     {visibleSettled.map(renderCompactRow)}
                     {hiddenSettledCount > 0 ? (
-                      <div className="px-1.5">
-                        <button
-                          type="button"
-                          className="flex h-8 w-full items-center gap-2 rounded-lg px-2.5 text-sm text-muted-foreground outline-none worktree-sidebar-card-hover focus-visible:ring-1 focus-visible:ring-ring"
-                          onClick={() => setSettledLimit((limit) => limit + SETTLED_PAGE_SIZE * 2)}
-                        >
-                          <Plus className="size-3.5 opacity-60" />
-                          {translate('components.sidebar.threads.showMore', 'Show {{count}} more', {
-                            count: hiddenSettledCount
-                          })}
-                        </button>
-                      </div>
+                      <ShowMoreButton
+                        count={hiddenSettledCount}
+                        onClick={() => setSettledLimit((limit) => limit + SETTLED_PAGE_SIZE * 2)}
+                      />
                     ) : null}
                   </>
                 )}
               </div>
+            ) : null}
+            {!searching && threadHistory.history.length > 0 ? (
+              <>
+                <CollapsibleSectionHeader
+                  label={translate('components.sidebar.threads.history', 'History')}
+                  collapsed={historyCollapsed}
+                  onToggle={() => setHistoryCollapsed(!historyCollapsed)}
+                />
+                {historyCollapsed ? null : (
+                  <>
+                    {visibleHistory.map(renderHistoryRow)}
+                    {hiddenHistoryCount > 0 ? (
+                      <ShowMoreButton
+                        count={hiddenHistoryCount}
+                        onClick={() => setHistoryLimit((limit) => limit + SETTLED_PAGE_SIZE * 2)}
+                      />
+                    ) : null}
+                  </>
+                )}
+              </>
             ) : null}
           </div>
         </div>

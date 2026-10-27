@@ -27,6 +27,8 @@ export function createThreadsPreferenceActions(set: UISliceSet): Partial<UISlice
     threadsSnoozedCollapsed: false,
     setThreadsSnoozedCollapsed: (v) => set({ threadsSnoozedCollapsed: v }),
     threadsSettledCollapsed: false,
-    setThreadsSettledCollapsed: (v) => set({ threadsSettledCollapsed: v })
+    setThreadsSettledCollapsed: (v) => set({ threadsSettledCollapsed: v }),
+    threadsHistoryCollapsed: true,
+    setThreadsHistoryCollapsed: (v) => set({ threadsHistoryCollapsed: v })
   }
 }
