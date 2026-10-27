@@ -19144,7 +19144,8 @@
         "showMore": "Show {{count}} more",
         "reopen": "Reopen",
         "namePlaceholder": "Thread name (optional, otherwise named from the prompt)",
-        "nameLabel": "Thread name"
+        "nameLabel": "Thread name",
+        "history": "History"
       }
     }
   },
