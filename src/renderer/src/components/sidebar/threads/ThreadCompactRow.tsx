@@ -53,7 +53,7 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
         </span>
         <span className="min-w-0 flex-1 truncate">{threadTitle(row.worktree)}</span>
         {timeLabel ? (
-          <span className={cn('shrink-0 text-xs tabular-nums', snoozed && 'text-blue-500')}>
+          <span className={cn('shrink-0 text-xs tabular-nums', snoozed && 'text-callout-note')}>
             {timeLabel}
           </span>
         ) : null}

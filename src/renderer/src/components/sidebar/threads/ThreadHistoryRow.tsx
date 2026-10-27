@@ -49,7 +49,7 @@ export const ThreadHistoryRow = React.memo(function ThreadHistoryRow({
       </span>
       {evidence ? (
         <span className="block w-full min-w-0 truncate pl-5.5 text-xs">
-          <span className={evidence.role === 'user' ? 'text-blue-500' : 'text-status-success'}>
+          <span className={evidence.role === 'user' ? 'text-callout-note' : 'text-status-success'}>
             {conversationRoleLabel(evidence.role)}:
           </span>{' '}
           {highlightedSearchSnippet(evidence.snippet)}
