@@ -122,6 +122,20 @@ function finiteOrUndefined(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
+/** Persisted Threads UI fields, normalized together on hydration. */
+export function normalizePersistedThreadUi(ui: {
+  sidebarLayout?: unknown
+  threadStates?: unknown
+}): {
+  sidebarLayout: SidebarLayout
+  threadStates: ThreadStates
+} {
+  return {
+    sidebarLayout: normalizeSidebarLayout(ui.sidebarLayout),
+    threadStates: normalizeThreadStates(ui.threadStates)
+  }
+}
+
 export function normalizeThreadStates(raw: unknown): ThreadStates {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return {}

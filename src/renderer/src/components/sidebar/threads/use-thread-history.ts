@@ -82,7 +82,9 @@ export function useThreadHistory(query: string): {
   )
   // The search hook returns a fresh retry each render; a ref keeps timers from resetting.
   const retryRef = useRef(search.retry)
-  retryRef.current = search.retry
+  useEffect(() => {
+    retryRef.current = search.retry
+  }, [search.retry])
   useAutoEnableConversationSearch(search.needsLocalConsent, retryRef)
 
   const notReady = search.response?.kind === 'unavailable' && search.response.reason === 'not-ready'

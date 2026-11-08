@@ -10,7 +10,7 @@ import {
 import { AgentTypeIcon } from '@/lib/agent-type-icon'
 import { formatShortTimeAgo } from '@/lib/short-time-ago'
 import { useNow } from '@/hooks/use-now'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/utils'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../shared/worktree/types'
@@ -125,7 +125,8 @@ function ThreadRowHoverActions({
   open: boolean
   onOpenChange: (open: boolean) => void
 }): React.JSX.Element {
-  const snoozeLabel = translate('components.sidebar.threads.snooze', 'Snooze')
+  const t = useTranslate()
+  const snoozeLabel = t('components.sidebar.threads.snooze', 'Snooze')
   return (
     <span
       className={cn(
@@ -159,7 +160,7 @@ function ThreadRowHoverActions({
       </DropdownMenu>
       <button type="button" className={HOVER_ACTION_CLASS} onClick={() => settleThread(worktree)}>
         <Check className="size-3.5" />
-        {translate('components.sidebar.threads.settle', 'Settle')}
+        {t('components.sidebar.threads.settle', 'Settle')}
       </button>
     </span>
   )

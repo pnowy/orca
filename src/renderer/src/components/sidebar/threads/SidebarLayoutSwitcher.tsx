@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import type { SidebarLayout } from '../../../../../shared/threads/thread-state'
 
 /** The sidebar title doubles as the Projects/Threads switch, keeping the header's icon row unchanged. */
@@ -18,10 +18,11 @@ export function SidebarLayoutSwitcher({
   projectsTitle: string
   projectsSectionKey: 'projects' | 'workspaces'
 }): React.JSX.Element {
+  const t = useTranslate()
   const layout = useAppStore((s) => s.sidebarLayout)
   const setLayout = useAppStore((s) => s.setSidebarLayout)
   const setSidebarBody = useAppStore((s) => s.setSidebarBody)
-  const threadsTitle = translate('components.sidebar.threads.title', 'Threads')
+  const threadsTitle = t('components.sidebar.threads.title', 'Threads')
   const options: { value: SidebarLayout; label: string }[] = [
     { value: 'projects', label: projectsTitle },
     { value: 'threads', label: threadsTitle }
@@ -39,7 +40,7 @@ export function SidebarLayoutSwitcher({
         <button
           type="button"
           className="flex min-w-0 items-center gap-0.5 rounded-sm pl-2 pr-1 text-xs font-semibold text-muted-foreground/80 outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
-          aria-label={translate('components.sidebar.threads.switchLayout', 'Switch sidebar layout')}
+          aria-label={t('components.sidebar.threads.switchLayout', 'Switch sidebar layout')}
         >
           <span
             className="min-w-0 truncate select-none"

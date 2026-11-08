@@ -1,8 +1,5 @@
 import type { UISlice, UISliceGet, UISliceSet } from './ui-slice-contract'
-import {
-  normalizeSidebarLayout,
-  normalizeThreadStates
-} from '../../../../../shared/threads/thread-state'
+import { normalizePersistedThreadUi } from '../../../../../shared/threads/thread-state'
 import type { AppState } from '../../types'
 import { normalizeRightSidebarRoute } from '../right-sidebar/right-sidebar-route'
 import {
@@ -178,8 +175,7 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           agentsShowSearch: ui.agentsShowSearch !== false,
           agentsReadFilter: normalizeThreadReadFilter(ui.agentsReadFilter),
           agentsGroupBy: normalizeActivityGroupBy(ui.agentsGroupBy),
-          sidebarLayout: normalizeSidebarLayout(ui.sidebarLayout),
-          threadStates: normalizeThreadStates(ui.threadStates),
+          ...normalizePersistedThreadUi(ui),
           collapsedGroups: new Set(ui.collapsedGroups ?? []),
           uiZoomLevel: ui.uiZoomLevel ?? 0,
           editorFontZoomLevel: ui.editorFontZoomLevel ?? 0,

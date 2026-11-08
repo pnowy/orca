@@ -4,7 +4,7 @@ import { useAppStore } from '@/store'
 import { useRepoMap } from '@/store/repos/use-repository-catalog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/utils'
 import { isActiveSidebarWorkspace } from '../../../../../shared/sidebar-list/active-workspace'
 import type { ThreadRow } from './thread-rows'
@@ -60,6 +60,7 @@ function ShowMoreButton({
   count: number
   onClick: () => void
 }): React.JSX.Element {
+  const t = useTranslate()
   return (
     <div className="px-1.5">
       <button
@@ -68,7 +69,7 @@ function ShowMoreButton({
         onClick={onClick}
       >
         <Plus className="size-3.5 opacity-60" />
-        {translate('components.sidebar.threads.showMore', 'Show {{count}} more', { count })}
+        {t('components.sidebar.threads.showMore', 'Show {{count}} more', { count })}
       </button>
     </div>
   )
@@ -83,6 +84,7 @@ function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.El
 }
 
 export default function ThreadList(): React.JSX.Element {
+  const t = useTranslate()
   useThreadOpenObserver(true)
   useThreadAutoSettleObserver(true)
   const [query, setQuery] = useState('')
@@ -211,8 +213,8 @@ export default function ThreadList(): React.JSX.Element {
                   setQuery('')
                 }
               }}
-              placeholder={translate('components.sidebar.threads.search', 'Search')}
-              aria-label={translate('components.sidebar.threads.searchLabel', 'Search threads')}
+              placeholder={t('components.sidebar.threads.search', 'Search')}
+              aria-label={t('components.sidebar.threads.searchLabel', 'Search threads')}
             />
           </div>
         </div>
@@ -229,19 +231,17 @@ export default function ThreadList(): React.JSX.Element {
               {empty && !searching ? (
                 <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
                   <p className="text-xs text-muted-foreground">
-                    {translate('components.sidebar.threads.empty', 'No open threads.')}
+                    {t('components.sidebar.threads.empty', 'No open threads.')}
                   </p>
                   <Button size="sm" variant="outline" onClick={() => openModal('new-thread')}>
                     <Plus className="size-3.5" />
-                    {translate('components.sidebar.threads.newThread', 'New thread')}
+                    {t('components.sidebar.threads.newThread', 'New thread')}
                   </Button>
                 </div>
               ) : null}
               {rows.pinned.length > 0 ? (
                 <>
-                  <SectionLabel>
-                    {translate('components.sidebar.threads.pinned', 'Pinned')}
-                  </SectionLabel>
+                  <SectionLabel>{t('components.sidebar.threads.pinned', 'Pinned')}</SectionLabel>
                   <div className="flex flex-col gap-1">
                     {rows.pinned.map((row) => renderRow(row, canDrag))}
                   </div>
@@ -265,7 +265,7 @@ export default function ThreadList(): React.JSX.Element {
                 >
                   <CollapsibleSectionHeader
                     accent
-                    label={translate('components.sidebar.threads.snoozed', 'Snoozed')}
+                    label={t('components.sidebar.threads.snoozed', 'Snoozed')}
                     collapsed={snoozedCollapsed}
                     onToggle={() => setSnoozedCollapsed(!snoozedCollapsed)}
                   />
@@ -282,7 +282,7 @@ export default function ThreadList(): React.JSX.Element {
                   onDrop={drop}
                 >
                   <CollapsibleSectionHeader
-                    label={translate('components.sidebar.threads.settled', 'Settled')}
+                    label={t('components.sidebar.threads.settled', 'Settled')}
                     collapsed={settledCollapsed}
                     onToggle={() => setSettledCollapsed(!settledCollapsed)}
                   />
@@ -302,7 +302,7 @@ export default function ThreadList(): React.JSX.Element {
               {!searching && threadHistory.history.length > 0 ? (
                 <>
                   <CollapsibleSectionHeader
-                    label={translate('components.sidebar.threads.history', 'History')}
+                    label={t('components.sidebar.threads.history', 'History')}
                     collapsed={historyCollapsed}
                     onToggle={() => setHistoryCollapsed(!historyCollapsed)}
                   />

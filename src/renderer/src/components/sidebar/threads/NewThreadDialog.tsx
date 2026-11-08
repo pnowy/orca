@@ -23,6 +23,7 @@ import {
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { AgentIcon, getAgentCatalog } from '@/lib/agent-catalog'
 import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import { isGitRepoKind } from '../../../../../shared/repo-kind'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { TuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent'
@@ -74,6 +75,7 @@ function ProjectPicker({
   onPick: (target: Target) => void
   onClose: () => void
 }): React.JSX.Element {
+  const t = useTranslate()
   // ⌘1–9 picks a project without leaving the search field.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -100,20 +102,20 @@ function ProjectPicker({
             onClose()
           }
         }}
-        placeholder={translate('components.sidebar.threads.searchProjects', 'Search projects...')}
+        placeholder={t('components.sidebar.threads.searchProjects', 'Search projects...')}
       />
       <CommandList className="max-h-[360px]">
         <CommandEmpty>
-          {translate('components.sidebar.threads.noProjects', 'No matching projects.')}
+          {t('components.sidebar.threads.noProjects', 'No matching projects.')}
         </CommandEmpty>
-        <CommandGroup heading={translate('components.sidebar.threads.projects', 'Projects')}>
+        <CommandGroup heading={t('components.sidebar.threads.projects', 'Projects')}>
           <CommandItem
             value={NO_PROJECT_VALUE}
-            keywords={[translate('components.sidebar.threads.noProject', 'No project')]}
+            keywords={[t('components.sidebar.threads.noProject', 'No project')]}
             onSelect={() => onPick({ kind: 'none' })}
           >
             <SquareDashed className="size-4 text-muted-foreground" />
-            <span>{translate('components.sidebar.threads.noProject', 'No project')}</span>
+            <span>{t('components.sidebar.threads.noProject', 'No project')}</span>
           </CommandItem>
           {repos.map((repo, index) => (
             <CommandItem
@@ -155,6 +157,7 @@ function ThreadComposer({
   onStartWithoutProject: () => void
   onDone: () => void
 }): React.JSX.Element {
+  const t = useTranslate()
   const { agents, defaultAgent } = useOfferedAgents()
   const [agent, setAgent] = useState<TuiAgent | null>(defaultAgent)
   const [prompt, setPrompt] = useState('')
@@ -185,10 +188,10 @@ function ThreadComposer({
 
   const title =
     target.kind === 'project'
-      ? translate('components.sidebar.threads.buildIn', 'What should we build in {{name}}?', {
+      ? t('components.sidebar.threads.buildIn', 'What should we build in {{name}}?', {
           name: target.repo.displayName
         })
-      : translate('components.sidebar.threads.buildNoProject', 'What should we build?')
+      : t('components.sidebar.threads.buildNoProject', 'What should we build?')
 
   return (
     <div className="flex flex-col gap-3">
@@ -197,7 +200,7 @@ function ThreadComposer({
           variant="ghost"
           size="icon-xs"
           className="mt-0.5"
-          aria-label={translate('components.sidebar.threads.back', 'Back')}
+          aria-label={t('components.sidebar.threads.back', 'Back')}
           onClick={onBack}
         >
           <ArrowLeft className="size-3.5" />
@@ -210,10 +213,7 @@ function ThreadComposer({
               className="self-start text-xs text-muted-foreground hover:text-foreground"
               onClick={onStartWithoutProject}
             >
-              {translate(
-                'components.sidebar.threads.startWithoutProject',
-                'or start without a project'
-              )}
+              {t('components.sidebar.threads.startWithoutProject', 'or start without a project')}
             </button>
           ) : null}
         </div>
@@ -227,11 +227,11 @@ function ThreadComposer({
             void submit()
           }
         }}
-        placeholder={translate(
+        placeholder={t(
           'components.sidebar.threads.namePlaceholder',
           'Thread name (optional, otherwise named from the prompt)'
         )}
-        aria-label={translate('components.sidebar.threads.nameLabel', 'Thread name')}
+        aria-label={t('components.sidebar.threads.nameLabel', 'Thread name')}
       />
       <Textarea
         autoFocus
@@ -243,7 +243,7 @@ function ThreadComposer({
             void submit()
           }
         }}
-        placeholder={translate(
+        placeholder={t(
           'components.sidebar.threads.promptPlaceholder',
           'Ask for changes, or leave empty to just start the agent'
         )}
@@ -255,7 +255,7 @@ function ThreadComposer({
           onValueChange={(value) => setAgent(agents.find((id) => id === value) ?? null)}
         >
           <SelectTrigger size="sm">
-            <SelectValue placeholder={translate('components.sidebar.threads.agent', 'Agent')} />
+            <SelectValue placeholder={t('components.sidebar.threads.agent', 'Agent')} />
           </SelectTrigger>
           <SelectContent>
             {agents.map((id) => (
@@ -277,12 +277,12 @@ function ThreadComposer({
             <SelectContent>
               <SelectItem value="checkout">
                 <FolderOpen className="size-3.5" />
-                {translate('components.sidebar.threads.currentCheckout', 'Current checkout')}
+                {t('components.sidebar.threads.currentCheckout', 'Current checkout')}
               </SelectItem>
               {isGit ? (
                 <SelectItem value="worktree">
                   <FolderGit2 className="size-3.5" />
-                  {translate('components.sidebar.threads.newWorktree', 'New worktree')}
+                  {t('components.sidebar.threads.newWorktree', 'New worktree')}
                 </SelectItem>
               ) : null}
             </SelectContent>
@@ -290,7 +290,7 @@ function ThreadComposer({
         ) : null}
         <div className="flex-1" />
         <Button size="sm" disabled={!agent || submitting} onClick={() => void submit()}>
-          {translate('components.sidebar.threads.start', 'Start')}
+          {t('components.sidebar.threads.start', 'Start')}
           <span className="text-[11px] opacity-70">⌘↵</span>
         </Button>
       </div>
@@ -299,6 +299,7 @@ function ThreadComposer({
 }
 
 export default function NewThreadDialog(): React.JSX.Element | null {
+  const t = useTranslate()
   const visible = useAppStore((s) => s.activeModal === 'new-thread')
   const closeModal = useAppStore((s) => s.closeModal)
   const repos = useAppStore((s) => s.repos)
@@ -321,8 +322,8 @@ export default function NewThreadDialog(): React.JSX.Element | null {
       <CommandDialog
         open
         onOpenChange={(open) => !open && closeModal()}
-        title={translate('components.sidebar.threads.newThread', 'New thread')}
-        description={translate(
+        title={t('components.sidebar.threads.newThread', 'New thread')}
+        description={t(
           'components.sidebar.threads.dialogDescription',
           'Pick a project, then describe what the agent should do.'
         )}
@@ -336,7 +337,7 @@ export default function NewThreadDialog(): React.JSX.Element | null {
     <Dialog open onOpenChange={(open) => !open && closeModal()}>
       <DialogContent showCloseButton={false} className="sm:max-w-xl">
         <DialogDescription className="sr-only">
-          {translate(
+          {t(
             'components.sidebar.threads.dialogDescription',
             'Pick a project, then describe what the agent should do.'
           )}

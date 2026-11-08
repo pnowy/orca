@@ -4,7 +4,7 @@ import { useAppStore } from '@/store'
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { activateWorktreeFromSidebar } from '@/lib/sidebar-worktree-activation'
 import { branchName } from '@/lib/git-utils'
-import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getRepoExecutionHostId } from '../../../../../shared/execution-host'
@@ -14,6 +14,7 @@ import { NO_PROJECT_GROUP_NAME } from './thread-launch'
 
 /** Repo name, or the folder workspace's project group name ("No project" for scratch threads). */
 export function useThreadProjectName(worktree: Worktree, repo: Repo | undefined): string {
+  const t = useTranslate()
   const groupId = repo ? null : projectGroupIdFromRepoId(worktree.repoId)
   const groupName = useAppStore((s) =>
     groupId ? (s.projectGroups ?? []).find((group) => group.id === groupId)?.name : undefined
@@ -22,7 +23,7 @@ export function useThreadProjectName(worktree: Worktree, repo: Repo | undefined)
     return repo.displayName
   }
   return groupName === NO_PROJECT_GROUP_NAME
-    ? translate('components.sidebar.threads.noProject', 'No project')
+    ? t('components.sidebar.threads.noProject', 'No project')
     : (groupName ?? '')
 }
 

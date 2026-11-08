@@ -32,15 +32,17 @@ export function useThreadWorkspaces(): Worktree[] {
 /** Live agent status per worktree id, refreshed on each agent-status epoch. */
 export function useLiveAgentStatusByWorktreeId(): ReadonlyMap<string, LiveAgentWorktreeStatus> {
   const agentStatusEpoch = useAppStore((s) => s.agentStatusEpoch)
+  const agentStatusByPaneKey = useAppStore((s) => s.agentStatusByPaneKey)
   const tabsByWorktree = useAppStore((s) => s.tabsByWorktree)
-  return useMemo(() => {
-    void agentStatusEpoch
-    return getLiveAgentStatusByWorktreeId(
-      useAppStore.getState().agentStatusByPaneKey,
-      tabsByWorktree,
-      getAgentStatusEpochNow(agentStatusEpoch)
-    )
-  }, [agentStatusEpoch, tabsByWorktree])
+  return useMemo(
+    () =>
+      getLiveAgentStatusByWorktreeId(
+        agentStatusByPaneKey,
+        tabsByWorktree,
+        getAgentStatusEpochNow(agentStatusEpoch)
+      ),
+    [agentStatusByPaneKey, agentStatusEpoch, tabsByWorktree]
+  )
 }
 
 /** Re-render once when the earliest pending snooze ends, so the row returns on time. */
