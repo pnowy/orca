@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { WorktreeRowOpenInSubMenu } from '../open/WorktreeRowOpenInSubMenu'
 import { WorktreeDeveloperMenu } from '../open/WorktreeDeveloperMenu'
 import { WorkspaceSleepMenuItems } from '../sleep/WorkspaceSleepMenuItems'
-import { ThreadMenuItems } from '../../threads/ThreadMenuItems'
+import { ThreadMenuItems, ThreadRenameMenuItem } from '../../threads/ThreadMenuItems'
 import { isEventTargetInsideCurrentTarget } from '../../workspace-card/controller/worktree-card-dom-events'
 import { useTranslate } from '@/i18n/use-translate'
 import type { WorktreeContextMenuModel } from './use-worktree-context-menu-model'
@@ -152,6 +152,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
           <DropdownMenuSeparator />
           {!isMultiContext && (
             <>
+              <ThreadRenameMenuItem worktree={worktree} disabled={isDeleting} />
               <DropdownMenuItem onSelect={handleRename} disabled={isDeleting}>
                 <Pencil className="size-3.5" />
                 {t('auto.components.sidebar.WorktreeContextMenu.editDetails', 'Edit Details…')}

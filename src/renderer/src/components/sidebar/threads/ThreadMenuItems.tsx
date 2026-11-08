@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlarmClock, AlarmClockOff, CircleCheck, RotateCcw } from 'lucide-react'
+import { AlarmClock, AlarmClockOff, CircleCheck, PencilLine, RotateCcw } from 'lucide-react'
 import { useAppStore } from '@/store'
 import {
   DropdownMenuItem,
@@ -8,6 +8,7 @@ import {
   DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu'
 import { translate } from '@/i18n/i18n'
+import { useTranslate } from '@/i18n/use-translate'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import { isThreadOpen, type ThreadSnoozeOption } from '../../../../../shared/threads/thread-state'
@@ -31,6 +32,32 @@ export const THREAD_SNOOZE_OPTIONS: { option: ThreadSnoozeOption; label: () => s
   }
 ]
 
+/** Inline rename of the thread title; renders nothing outside the Threads layout. */
+export function ThreadRenameMenuItem({
+  worktree,
+  disabled
+}: {
+  worktree: Worktree
+  disabled: boolean
+}): React.JSX.Element | null {
+  const t = useTranslate()
+  const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
+  const setRenamingWorktreeId = useAppStore((s) => s.setRenamingWorktreeId)
+  if (!threadsLayout) {
+    return null
+  }
+  return (
+    <DropdownMenuItem
+      disabled={disabled}
+      // Why: the menu refocuses the sidebar on close, which would blur and cancel an editor opened synchronously.
+      onSelect={() => window.setTimeout(() => setRenamingWorktreeId(worktree.id), 0)}
+    >
+      <PencilLine className="size-3.5" />
+      {t('components.sidebar.threads.rename', 'Rename')}
+    </DropdownMenuItem>
+  )
+}
+
 /** Snooze and Settle for a workspace card's menu; renders nothing outside the Threads layout. */
 export function ThreadMenuItems({
   worktree,
@@ -39,6 +66,7 @@ export function ThreadMenuItems({
   worktree: Worktree
   disabled: boolean
 }): React.JSX.Element | null {
+  const t = useTranslate()
   const threadsLayout = useAppStore((s) => s.sidebarLayout === 'threads')
   const key = getWorktreeHostIdentity(worktree)
   const snoozedUntil = useAppStore((s) => s.threadStates?.[key]?.snoozedUntil ?? 0)
@@ -58,7 +86,7 @@ export function ThreadMenuItems({
       <DropdownMenuSub>
         <DropdownMenuSubTrigger disabled={disabled}>
           <AlarmClock className="size-3.5" />
-          {translate('components.sidebar.threads.snooze', 'Snooze')}
+          {t('components.sidebar.threads.snooze', 'Snooze')}
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           {THREAD_SNOOZE_OPTIONS.map(({ option, label }) => (
@@ -74,7 +102,7 @@ export function ThreadMenuItems({
           onSelect={() => updateThreadState(key, { snoozedUntil: undefined })}
         >
           <AlarmClockOff className="size-3.5" />
-          {translate('components.sidebar.threads.unsnooze', 'Unsnooze')}
+          {t('components.sidebar.threads.unsnooze', 'Unsnooze')}
         </DropdownMenuItem>
       ) : null}
       {settled ? (
@@ -83,12 +111,12 @@ export function ThreadMenuItems({
           onSelect={() => reopenSettledThread(worktree, resumeLatest)}
         >
           <RotateCcw className="size-3.5" />
-          {translate('components.sidebar.threads.reopen', 'Reopen')}
+          {t('components.sidebar.threads.reopen', 'Reopen')}
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem disabled={disabled} onSelect={() => settleThread(worktree)}>
           <CircleCheck className="size-3.5" />
-          {translate('components.sidebar.threads.settle', 'Settle')}
+          {t('components.sidebar.threads.settle', 'Settle')}
         </DropdownMenuItem>
       )}
     </>

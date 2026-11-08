@@ -21612,6 +21612,7 @@
         "settled": "Settled",
         "showMore": "Show {{count}} more",
         "reopen": "Reopen",
+        "rename": "Rename",
         "namePlaceholder": "Thread name (optional, otherwise named from the prompt)",
         "nameLabel": "Thread name",
         "history": "History"

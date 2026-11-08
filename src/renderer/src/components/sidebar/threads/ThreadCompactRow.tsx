@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useAppStore } from '@/store'
 import { formatShortTimeAgo } from '@/lib/short-time-ago'
 import { useNow } from '@/hooks/use-now'
 import { cn } from '@/lib/utils'
 import type { Repo } from '../../../../../shared/repo-types'
 import WorktreeContextMenu from '../workspace-actions/context-menu/WorktreeContextMenu'
+import { WorktreeTitleInlineRename } from '../workspace-card/identity/WorktreeTitleInlineRename'
+import { shouldBeginWorktreeRename } from '../workspace-card/controller/worktree-card-model'
+import { renameThread } from './thread-launch'
 import type { ThreadRow } from './thread-rows'
 import { ThreadProjectGlyph, activateThread, threadTitle } from './thread-project-identity'
 
@@ -24,6 +28,9 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
   onDragEnd: () => void
 }): React.JSX.Element {
   const now = useNow(60_000)
+  const [renaming, setRenaming] = useState(false)
+  const renamingRequest = useAppStore((s) => s.renamingWorktreeId)
+  const setRenamingRequest = useAppStore((s) => s.setRenamingWorktreeId)
   const at = row.at ?? 0
   const snoozed = row.kind === 'snoozed'
   // Snoozed rows count down to wake; formatShortTimeAgo(now, at) measures at - now.
@@ -39,7 +46,7 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
         )}
         data-worktree-card-surface="true"
         data-worktree-card-active={isActive ? 'primary' : undefined}
-        draggable={draggable}
+        draggable={draggable && !renaming}
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = 'move'
           event.dataTransfer.setData('text/plain', row.worktree.id)
@@ -51,7 +58,14 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
         <span className="opacity-60">
           <ThreadProjectGlyph repo={repo} />
         </span>
-        <span className="min-w-0 flex-1 truncate">{threadTitle(row.worktree)}</span>
+        <WorktreeTitleInlineRename
+          displayName={threadTitle(row.worktree)}
+          className="min-w-0 flex-1"
+          onEditingChange={setRenaming}
+          onRename={(displayName) => renameThread(row.worktree, displayName)}
+          beginEditing={shouldBeginWorktreeRename(renamingRequest, row.worktree.id, undefined)}
+          onBeginEditingConsumed={() => setRenamingRequest(null)}
+        />
         {timeLabel ? (
           <span className={cn('shrink-0 text-xs tabular-nums', snoozed && 'text-callout-note')}>
             {timeLabel}
