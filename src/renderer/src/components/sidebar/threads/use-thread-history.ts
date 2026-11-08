@@ -105,8 +105,7 @@ export function useThreadHistory(query: string): {
     repos,
     allWorktrees,
     workspaceId: activeWorktreeId,
-    resumeTargetState,
-    settings
+    resumeTargetState
   })
   const paneActions = useAiVaultOriginalPaneActions()
   const worktreeById = useMemo(
