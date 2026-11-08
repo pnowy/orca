@@ -8,8 +8,8 @@ import { translate } from '@/i18n/i18n'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getRepoExecutionHostId } from '../../../../../shared/execution-host'
-import { projectGroupIdFromRepoId } from '../../../../../shared/folder-workspace-worktree'
-import { resolveRepoHeaderColor } from '../project-header-color'
+import { projectGroupIdFromRepoId } from '../../../../../shared/folder-workspaces/folder-workspace-worktree'
+import { resolveRepoHeaderColor } from '../worktree-list/rows/project-header-color'
 import { NO_PROJECT_GROUP_NAME } from './thread-launch'
 
 /** Repo name, or the folder workspace's project group name ("No project" for scratch threads). */

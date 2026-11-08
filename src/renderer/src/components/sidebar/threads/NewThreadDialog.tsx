@@ -25,7 +25,7 @@ import { AgentIcon, getAgentCatalog } from '@/lib/agent-catalog'
 import { translate } from '@/i18n/i18n'
 import { isGitRepoKind } from '../../../../../shared/repo-kind'
 import type { Repo } from '../../../../../shared/repo-types'
-import type { TuiAgent } from '../../../../../shared/tui-agent'
+import type { TuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent'
 import {
   getRepoExecutionHostId,
   LOCAL_EXECUTION_HOST_ID

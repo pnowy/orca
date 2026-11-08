@@ -17,15 +17,15 @@ import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import type { DashboardAgentRow } from '@/components/dashboard/useDashboardData'
 import { useAppStore } from '@/store'
-import WorktreeContextMenu from '../WorktreeContextMenu'
-import { WorktreeTitleInlineRename } from '../WorktreeTitleInlineRename'
-import { shouldBeginWorktreeRename } from '../worktree-card-model'
+import WorktreeContextMenu from '../workspace-actions/context-menu/WorktreeContextMenu'
+import { WorktreeTitleInlineRename } from '../workspace-card/identity/WorktreeTitleInlineRename'
+import { shouldBeginWorktreeRename } from '../workspace-card/controller/worktree-card-model'
 import { renameThread } from './thread-launch'
-import { useWorktreeAgentRows } from '../useWorktreeAgentRows'
+import { useWorktreeAgentRows } from '../workspace-card/activity/useWorktreeAgentRows'
 import {
   buildSummaryAgentGroups,
   selectSummaryGroupIconAgents
-} from '../worktree-card-agent-summary'
+} from '../workspace-card/activity/worktree-card-agent-summary'
 import { settleThread, snoozeThread } from './thread-actions'
 import { THREAD_SNOOZE_OPTIONS } from './ThreadMenuItems'
 import {

@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '@/store'
-import { getRepoMapFromState } from '@/store/selectors'
-import { selectFolderWorkspaces, selectWorktreesByRepo } from '@/store/workspace-record-selectors'
-import { getFolderWorkspaceWorktree } from '@/store/slices/worktrees/listing/detected-worktree-meta'
+import { useRepoMap } from '@/store/repos/use-repository-catalog'
+import {
+  selectFolderWorkspaces,
+  selectWorktreesByRepo
+} from '@/store/workspaces/catalog/workspace-record-fields'
+import { getFolderWorkspaceWorktree } from '../../../../../shared/folder-workspaces/folder-workspace-worktree'
 import { getAgentStatusEpochNow } from '@/lib/agent-status-epoch-clock'
 import { getLiveAgentStatusByWorktreeId } from '@/lib/worktree-activity-state'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import type { LiveAgentWorktreeStatus } from '../../../../../shared/sidebar-list/workspace-activity-facts'
 import { nextSnoozeExpiry, type ThreadStates } from '../../../../../shared/threads/thread-state'
-import { matchWorkspaceBoardWorktrees } from '../workspace-kanban-search'
+import { matchWorkspaceBoardWorktrees } from '../workspace-board/search/workspace-kanban-search'
 import { buildThreadRows, type ThreadRows } from './thread-rows'
 
 const EMPTY_THREAD_STATES: ThreadStates = {}
@@ -60,10 +63,9 @@ export function useThreadListModel(args: { query: string }): {
 } {
   const workspaces = useThreadWorkspaces()
   const states = useAppStore((s) => s.threadStates ?? EMPTY_THREAD_STATES)
-  const repos = useAppStore((s) => s.repos)
   const liveStatusByWorktreeId = useLiveAgentStatusByWorktreeId()
   const clockNow = useSnoozeClock(states)
-  const repoMap = useMemo(() => getRepoMapFromState({ repos }), [repos])
+  const repoMap = useRepoMap()
   const matches = useMemo(
     () => matchWorkspaceBoardWorktrees({ worktrees: workspaces, query: args.query, repoMap }),
     [workspaces, args.query, repoMap]

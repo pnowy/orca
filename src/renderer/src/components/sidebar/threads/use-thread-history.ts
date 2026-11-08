@@ -2,25 +2,31 @@ import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '@/store'
-import { getProjectHostSetupProjectionFromState } from '@/store/project-host-setup-selector'
-import { useAllWorktrees, useRepos } from '@/store/selectors'
-import { selectFolderWorkspaces, selectWorktreesByRepo } from '@/store/workspace-record-selectors'
+import { useAllWorktrees } from '@/store/slices/worktrees/listing/use-worktree-catalog'
+import { useRepos } from '@/store/repos/use-repository-catalog'
+import {
+  selectFolderWorkspaces,
+  selectWorktreesByRepo
+} from '@/store/workspaces/catalog/workspace-record-fields'
 import { isWebClientLocation } from '@/lib/web-client-location'
-import { AI_VAULT_AGENTS, type AiVaultSession } from '../../../../../shared/ai-vault-types'
-import type { AiVaultSearchHit } from '../../../../../shared/ai-vault-search-types'
+import {
+  AI_VAULT_AGENTS,
+  type AiVaultSession
+} from '../../../../../shared/ai-vault/contracts/ai-vault-types'
+import type { AiVaultSearchHit } from '../../../../../shared/ai-vault/search/ai-vault-search-types'
 import {
   ALL_EXECUTION_HOSTS_SCOPE,
   LOCAL_EXECUTION_HOST_ID,
   getRepoExecutionHostId,
   type ExecutionHostScope
 } from '../../../../../shared/execution-host'
-import { resolveAiVaultSearchSettings } from '../../../../../shared/ai-vault-search-settings'
+import { resolveAiVaultSearchSettings } from '../../../../../shared/ai-vault/search/ai-vault-search-settings'
 import type { Worktree } from '../../../../../shared/worktree/types'
-import { useAiVaultSessionRefresh } from '../../right-sidebar/ai-vault-session-refresh'
-import { useAiVaultPanelSearch } from '../../right-sidebar/use-ai-vault-search'
-import { useAiVaultPanelSessionResume } from '../../right-sidebar/use-ai-vault-panel-session-resume'
-import { useAiVaultSessionLaunchActions } from '../../right-sidebar/ai-vault-session-launch-actions'
-import { useAiVaultOriginalPaneActions } from '../../right-sidebar/ai-vault-original-pane-actions'
+import { useAiVaultSessionRefresh } from '../../right-sidebar/ai-vault/scanning/ai-vault-session-refresh'
+import { useAiVaultPanelSearch } from '../../right-sidebar/ai-vault/search/use-ai-vault-search'
+import { useAiVaultPanelSessionResume } from '../../right-sidebar/ai-vault/session-actions/use-ai-vault-panel-session-resume'
+import { useAiVaultSessionLaunchActions } from '../../right-sidebar/ai-vault/session-actions/ai-vault-session-launch-actions'
+import { useAiVaultOriginalPaneActions } from '../../right-sidebar/ai-vault/session-actions/ai-vault-original-pane-actions'
 import { getWorktreeIdsWithAgentPanes } from './thread-auto-settle'
 
 export type ThreadHistoryRow = {
@@ -50,7 +56,7 @@ export function useThreadHistory(query: string): {
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const resumeTargetState = useAppStore(
     useShallow((state) => ({
-      projectHostSetupProjection: getProjectHostSetupProjectionFromState(state),
+      projects: state.projects,
       settings: state.settings,
       folderWorkspaces: selectFolderWorkspaces(state),
       projectGroups: state.projectGroups,

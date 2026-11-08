@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
-import { makeWorktree } from '@/store/slices/worktrees-slice-test-fixtures'
+import { makeWorktree } from '@/store/slices/worktrees/worktree.test-fixture'
 import { buildThreadRows } from './thread-rows'
 
 function worktree(id: string, overrides: Partial<Worktree> = {}): Worktree {

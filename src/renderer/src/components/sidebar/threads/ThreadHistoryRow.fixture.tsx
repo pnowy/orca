@@ -1,8 +1,8 @@
 import { defineFixture } from '../../../component-fixtures/component-fixture'
-import { makeWorktree } from '@/store/slices/worktrees-slice-test-fixtures'
+import { makeWorktree } from '@/store/slices/worktrees/worktree.test-fixture'
 import type { Repo } from '../../../../../shared/repo-types'
-import type { AiVaultSession } from '../../../../../shared/ai-vault-types'
-import type { AiVaultSearchHit } from '../../../../../shared/ai-vault-search-types'
+import type { AiVaultSession } from '../../../../../shared/ai-vault/contracts/ai-vault-types'
+import type { AiVaultSearchHit } from '../../../../../shared/ai-vault/search/ai-vault-search-types'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../../../shared/execution-host'
 import { ThreadHistoryRow } from './ThreadHistoryRow'
 

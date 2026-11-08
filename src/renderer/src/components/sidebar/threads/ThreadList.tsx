@@ -1,7 +1,7 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { ChevronDown, Plus, Search } from 'lucide-react'
 import { useAppStore } from '@/store'
-import { getRepoMapFromState } from '@/store/selectors'
+import { useRepoMap } from '@/store/repos/use-repository-catalog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { translate } from '@/i18n/i18n'
@@ -97,8 +97,7 @@ export default function ThreadList(): React.JSX.Element {
   const setHistoryCollapsed = useAppStore((s) => s.setThreadsHistoryCollapsed)
   const [historyLimit, setHistoryLimit] = useState(SETTLED_PAGE_SIZE)
   const threadHistory = useThreadHistory(query)
-  const repos = useAppStore((s) => s.repos)
-  const repoMap = useMemo(() => getRepoMapFromState({ repos }), [repos])
+  const repoMap = useRepoMap()
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const activeHostId = useAppStore((s) => s.activeWorkspaceExecutionHostId)
   const openModal = useAppStore((s) => s.openModal)

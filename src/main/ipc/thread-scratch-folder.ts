@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { ipcMain } from 'electron'
 
-import type { Store } from '../persistence'
+import type { Store } from '../persistence/loading-store/store'
 import { getDefaultWorkspaceDir } from '../../shared/constants'
 
 const THREAD_SCRATCH_ROOT_NAME = 'threads'

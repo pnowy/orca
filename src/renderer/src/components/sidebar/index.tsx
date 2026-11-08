@@ -213,21 +213,21 @@ function Sidebar({
                 (sidebarLayout === 'threads' ? (
                   <ThreadList />
                 ) : (
-                <>
-                  <LocalGitToolchainScanBanner />
-                  <StartupWorktreeRefreshStatus />
-                  <WorktreeList
-                    scrollOffsetRef={worktreeScrollOffsetRef}
-                    scrollAnchorRef={worktreeScrollAnchorRef}
-                    workspaceBoardOpen={workspaceBoardOpen}
-                    onWorktreeCardClick={closeWorkspaceBoard}
-                    onWorkspaceBoardDragPreviewStart={previewWorkspaceBoardFromDrag}
-                    onWorkspaceBoardDragPreviewCommit={solidifyWorkspaceBoardFromDrag}
-                    onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
-                    projectsCollapseTarget={projectsCollapseTarget}
-                  />
-                  <WslMovedProjectsSection />
-                </>
+                  <>
+                    <LocalGitToolchainScanBanner />
+                    <StartupWorktreeRefreshStatus />
+                    <WorktreeList
+                      scrollOffsetRef={worktreeScrollOffsetRef}
+                      scrollAnchorRef={worktreeScrollAnchorRef}
+                      workspaceBoardOpen={workspaceBoardOpen}
+                      onWorktreeCardClick={closeWorkspaceBoard}
+                      onWorkspaceBoardDragPreviewStart={previewWorkspaceBoardFromDrag}
+                      onWorkspaceBoardDragPreviewCommit={solidifyWorkspaceBoardFromDrag}
+                      onWorkspaceBoardDragPreviewCancel={cancelWorkspaceBoardDragPreview}
+                      projectsCollapseTarget={projectsCollapseTarget}
+                    />
+                    <WslMovedProjectsSection />
+                  </>
                 ))}
 
               <div className="relative shrink-0">

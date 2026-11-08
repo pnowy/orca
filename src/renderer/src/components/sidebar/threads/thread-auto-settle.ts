@@ -1,5 +1,5 @@
-import type { AgentStatusEntry } from '../../../../../shared/agent-status-types'
-import { resolveAgentStatusWorktreeId } from '../../../../../shared/agent-status-worktree-attribution'
+import type { AgentStatusEntry } from '../../../../../shared/agent-status/contracts/agent-status-types'
+import { resolveAgentStatusWorktreeId } from '../../../../../shared/agent-status/identity/agent-status-worktree-attribution'
 
 /** Workspaces with an agent pane in any state, done included; stopping the agent removes its entry. */
 export function getWorktreeIdsWithAgentPanes(

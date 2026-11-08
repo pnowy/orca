@@ -3,7 +3,7 @@ import { formatShortTimeAgo } from '@/lib/short-time-ago'
 import { useNow } from '@/hooks/use-now'
 import { cn } from '@/lib/utils'
 import type { Repo } from '../../../../../shared/repo-types'
-import WorktreeContextMenu from '../WorktreeContextMenu'
+import WorktreeContextMenu from '../workspace-actions/context-menu/WorktreeContextMenu'
 import type { ThreadRow } from './thread-rows'
 import { ThreadProjectGlyph, activateThread, threadTitle } from './thread-project-identity'
 
