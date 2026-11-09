@@ -3,6 +3,7 @@ import type {
   ThreadState,
   ThreadStates
 } from '../../../../../shared/threads/thread-state'
+import type { ThreadTagDialogRequest, ThreadTags } from '../../../../../shared/threads/thread-tags'
 import type { PersistedUIState } from '../../../../../shared/persisted-ui-state-types'
 import type { BrowserDevToolsDockLayout } from '../../../../../shared/browser-devtools-dock'
 import type {
@@ -105,6 +106,14 @@ export type UISlicePreferences = {
   ) => void
   /** Apply a whole-list rewrite (reorder) in one persisted write. */
   replaceThreadStates: (states: ThreadStates) => void
+  threadTags: ThreadTags
+  setThreadTags: (tags: ThreadTags) => void
+  /** Selected tag ids (OR); project tags use `projectTagFilterId`. */
+  threadTagFilter: string[]
+  setThreadTagFilter: (filter: string[]) => void
+  /** Session-only: the create/rename tag dialog the Threads list renders. */
+  threadTagDialog: ThreadTagDialogRequest | null
+  setThreadTagDialog: (request: ThreadTagDialogRequest | null) => void
   /** Session-only collapse state of the Threads list's Snoozed, Settled and History sections. */
   threadsSnoozedCollapsed: boolean
   setThreadsSnoozedCollapsed: (v: boolean) => void

@@ -77,6 +77,10 @@ export const UI_STATE_DISPOSITIONS = {
   threadStates: notApplicableDisposition(
     38,
     'Keyed by host identity; a moved workspace reopens as a thread when an agent runs there.'
+  ),
+  threadTags: notApplicableDisposition(
+    38,
+    'Keyed by host identity and repo id; a moved workspace starts untagged.'
   )
 } as const satisfies Partial<Record<keyof PersistedUIState, WslMoveFieldDisposition>>
 
@@ -196,7 +200,8 @@ export const UI_STATE_GLOBAL_FIELDS = [
   '_workspaceStatusesDefaultWorkflowMigrated',
   '_workspaceStatusesReorderedDefaultRepaired',
   '_zcodeStatusBarDefaultAdded',
-  'sidebarLayout'
+  'sidebarLayout',
+  'threadTagFilter'
 ] as const satisfies readonly (keyof PersistedUIState)[]
 
 // Exhaustiveness prevents moves stranding newly added workspace state.

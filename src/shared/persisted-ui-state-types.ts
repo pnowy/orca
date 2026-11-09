@@ -31,6 +31,7 @@ import type { WorkspaceStatusDefinition } from './worktree/types'
 import type { PersistedAutomationHostFilter } from './automations/ownership/automation-host-filter'
 import type { PendingRuntimeRepoRemoval } from './pending-runtime-repo-removal'
 import type { SidebarLayout, ThreadStates } from './threads/thread-state'
+import type { ThreadTags } from './threads/thread-tags'
 
 export type PersistedUIState = {
   gitGraphFiltersByWorktree?: Record<string, GitHistoryRefs>
@@ -111,6 +112,10 @@ export type PersistedUIState = {
   sidebarLayout?: SidebarLayout
   /** Threads-layout state per workspace host identity. */
   threadStates?: ThreadStates
+  /** Threads-layout custom tags and where they are applied. */
+  threadTags?: ThreadTags
+  /** Threads-layout tag filter (OR). Absent means show all. */
+  threadTagFilter?: string[]
   collapsedGroups: string[]
   uiZoomLevel: number
   editorFontZoomLevel: number

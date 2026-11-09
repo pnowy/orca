@@ -169,6 +169,17 @@ export const UiUpdateFields = z
           .strict()
       )
       .optional(),
+    threadTags: z
+      .object({
+        tags: z
+          .array(z.object({ id: z.string(), name: z.string(), color: z.string() }).strict())
+          .max(200),
+        byThread: z.record(z.string(), z.array(z.string())),
+        byProject: z.record(z.string(), z.array(z.string()))
+      })
+      .strict()
+      .optional(),
+    threadTagFilter: z.array(z.string()).max(200).optional(),
     workspaceHostOrder: z.array(z.string()).optional(),
     automationHostFilter: z
       .union([

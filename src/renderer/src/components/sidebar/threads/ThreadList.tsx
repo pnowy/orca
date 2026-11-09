@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { ChevronDown, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { useRepoMap } from '@/store/repos/use-repository-catalog'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,11 @@ import { useThreadListModel } from './use-thread-list-model'
 import { useThreadDragDrop } from './use-thread-drag-drop'
 import { useThreadHistory } from './use-thread-history'
 import { ThreadHistoryRow } from './ThreadHistoryRow'
+import { CollapsibleSectionHeader, SectionLabel, ShowMoreButton } from './thread-list-sections'
+import { ThreadTagFilterBar } from './ThreadTagFilterBar'
+import { ThreadTagDialog } from './ThreadTagDialog'
+import { matchesThreadTagFilter } from '../../../../../shared/threads/thread-tags'
+import { getWorktreeHostIdentity } from '../../../../../shared/worktree/host-qualified-identity'
 import type { ThreadHistoryRow as ThreadHistoryRowData } from './use-thread-history'
 import { ThreadResumeContext } from './thread-resume-context'
 import { useThreadAutoSettleObserver, useThreadOpenObserver } from './use-thread-open-observer'
@@ -22,74 +27,17 @@ const SETTLED_PAGE_SIZE = 10
 const DROP_ZONE_ACTIVE_CLASS =
   'bg-worktree-sidebar-accent/40 ring-1 ring-inset ring-worktree-sidebar-ring/40'
 
-/** T3-style collapsible divider: label, rule, chevron. */
-function CollapsibleSectionHeader({
-  label,
-  collapsed,
-  onToggle,
-  accent = false
-}: {
-  label: string
-  collapsed: boolean
-  onToggle: () => void
-  accent?: boolean
-}): React.JSX.Element {
-  return (
-    <button
-      type="button"
-      className={cn(
-        'flex w-full items-center gap-2 px-3 pb-1 pt-3 text-xs outline-none select-none focus-visible:ring-1 focus-visible:ring-ring',
-        accent ? 'text-callout-note' : 'text-muted-foreground'
-      )}
-      aria-expanded={!collapsed}
-      onClick={onToggle}
-    >
-      <span className="shrink-0">{label}</span>
-      <span className={cn('h-px flex-1', accent ? 'bg-callout-note/40' : 'bg-border')} />
-      <ChevronDown
-        className={cn('size-3.5 shrink-0 transition-transform', collapsed && '-rotate-90')}
-      />
-    </button>
-  )
-}
-
-function ShowMoreButton({
-  count,
-  onClick
-}: {
-  count: number
-  onClick: () => void
-}): React.JSX.Element {
-  const t = useTranslate()
-  return (
-    <div className="px-1.5">
-      <button
-        type="button"
-        className="flex h-8 w-full items-center gap-2 rounded-lg px-2.5 text-sm text-muted-foreground outline-none worktree-sidebar-card-hover focus-visible:ring-1 focus-visible:ring-ring"
-        onClick={onClick}
-      >
-        <Plus className="size-3.5 opacity-60" />
-        {t('components.sidebar.threads.showMore', 'Show {{count}} more', { count })}
-      </button>
-    </div>
-  )
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }): React.JSX.Element {
-  return (
-    <div className="px-3 pb-1 pt-2 text-2xs font-medium text-muted-foreground select-none">
-      {children}
-    </div>
-  )
-}
-
 export default function ThreadList(): React.JSX.Element {
   const t = useTranslate()
   useThreadOpenObserver(true)
   useThreadAutoSettleObserver(true)
   const [query, setQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
-  const { rows } = useThreadListModel({ query })
+  const { rows, unfilteredRows } = useThreadListModel({ query })
+  const tagFilter = useAppStore((s) => s.threadTagFilter)
+  const threadTags = useAppStore((s) => s.threadTags)
+  const setThreadTagFilter = useAppStore((s) => s.setThreadTagFilter)
+  const tagFiltering = tagFilter.length > 0
   const snoozedCollapsed = useAppStore((s) => s.threadsSnoozedCollapsed)
   const setSnoozedCollapsed = useAppStore((s) => s.setThreadsSnoozedCollapsed)
   const settledCollapsed = useAppStore((s) => s.threadsSettledCollapsed)
@@ -182,8 +130,18 @@ export default function ThreadList(): React.JSX.Element {
   // A search shows every settled match; paging only trims the idle list.
   const visibleSettled = searching ? rows.settled : rows.settled.slice(0, settledLimit)
   const hiddenSettledCount = rows.settled.length - visibleSettled.length
-  const visibleHistory = threadHistory.history.slice(0, historyLimit)
-  const hiddenHistoryCount = threadHistory.history.length - visibleHistory.length
+  const filteredHistory = tagFiltering
+    ? threadHistory.history.filter((row) =>
+        matchesThreadTagFilter(
+          tagFilter,
+          threadTags,
+          getWorktreeHostIdentity(row.worktree),
+          row.worktree.repoId
+        )
+      )
+    : threadHistory.history
+  const visibleHistory = filteredHistory.slice(0, historyLimit)
+  const hiddenHistoryCount = filteredHistory.length - visibleHistory.length
 
   const renderHistoryRow = (row: ThreadHistoryRowData): React.JSX.Element => (
     <div key={row.session.id} className="px-1.5">
@@ -218,6 +176,7 @@ export default function ThreadList(): React.JSX.Element {
             />
           </div>
         </div>
+        <ThreadTagFilterBar rows={unfilteredRows} />
         <div className="min-h-0 flex-1 overflow-y-auto pb-2 scrollbar-sleek" role="listbox">
           <div className="flex min-h-full flex-col">
             <div
@@ -228,7 +187,17 @@ export default function ThreadList(): React.JSX.Element {
               onDragOver={dragOver({ kind: 'open' })}
               onDrop={drop}
             >
-              {empty && !searching ? (
+              {empty && !searching && tagFiltering ? (
+                <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    {t('components.sidebar.threads.tags.noMatches', 'No threads with these tags.')}
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => setThreadTagFilter([])}>
+                    {t('components.sidebar.threads.tags.clearFilter', 'Clear filter')}
+                  </Button>
+                </div>
+              ) : null}
+              {empty && !searching && !tagFiltering ? (
                 <div className="flex flex-col items-center gap-2 px-4 pt-8 text-center">
                   <p className="text-xs text-muted-foreground">
                     {t('components.sidebar.threads.empty', 'No open threads.')}
@@ -299,7 +268,7 @@ export default function ThreadList(): React.JSX.Element {
                   )}
                 </div>
               ) : null}
-              {!searching && threadHistory.history.length > 0 ? (
+              {!searching && filteredHistory.length > 0 ? (
                 <>
                   <CollapsibleSectionHeader
                     label={t('components.sidebar.threads.history', 'History')}
@@ -323,6 +292,7 @@ export default function ThreadList(): React.JSX.Element {
           </div>
         </div>
       </div>
+      <ThreadTagDialog />
     </ThreadResumeContext.Provider>
   )
 }

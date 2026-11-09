@@ -11,10 +11,12 @@ import { getLiveAgentStatusByWorktreeId } from '@/lib/worktree-activity-state'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import type { LiveAgentWorktreeStatus } from '../../../../../shared/sidebar-list/workspace-activity-facts'
 import { nextSnoozeExpiry, type ThreadStates } from '../../../../../shared/threads/thread-state'
+import { EMPTY_THREAD_TAGS } from '../../../../../shared/threads/thread-tags'
 import { matchWorkspaceBoardWorktrees } from '../workspace-board/search/workspace-kanban-search'
 import { buildThreadRows, type ThreadRows } from './thread-rows'
 
 const EMPTY_THREAD_STATES: ThreadStates = {}
+const EMPTY_FILTER: string[] = []
 
 /** Every git worktree and folder workspace this window knows, as cards render them. */
 export function useThreadWorkspaces(): Worktree[] {
@@ -59,12 +61,16 @@ function useSnoozeClock(states: Parameters<typeof nextSnoozeExpiry>[0]): number 
   return now
 }
 
+/** `rows` honors search and the tag filter; `unfilteredRows` ignores the tag filter, for tag chips. */
 export function useThreadListModel(args: { query: string }): {
   rows: ThreadRows
+  unfilteredRows: ThreadRows
   workspaces: Worktree[]
 } {
   const workspaces = useThreadWorkspaces()
   const states = useAppStore((s) => s.threadStates ?? EMPTY_THREAD_STATES)
+  const tags = useAppStore((s) => s.threadTags ?? EMPTY_THREAD_TAGS)
+  const filter = useAppStore((s) => s.threadTagFilter ?? EMPTY_FILTER)
   const liveStatusByWorktreeId = useLiveAgentStatusByWorktreeId()
   const clockNow = useSnoozeClock(states)
   const repoMap = useRepoMap()
@@ -72,7 +78,7 @@ export function useThreadListModel(args: { query: string }): {
     () => matchWorkspaceBoardWorktrees({ worktrees: workspaces, query: args.query, repoMap }),
     [workspaces, args.query, repoMap]
   )
-  const rows = useMemo(
+  const unfilteredRows = useMemo(
     () =>
       buildThreadRows({
         workspaces,
@@ -83,5 +89,19 @@ export function useThreadListModel(args: { query: string }): {
       }),
     [workspaces, states, liveStatusByWorktreeId, clockNow, matches]
   )
-  return { rows, workspaces }
+  const rows = useMemo(
+    () =>
+      filter.length === 0
+        ? unfilteredRows
+        : buildThreadRows({
+            workspaces,
+            states,
+            liveStatusByWorktreeId,
+            now: clockNow,
+            matches,
+            tagFilter: { filter, tags }
+          }),
+    [unfilteredRows, filter, tags, workspaces, states, liveStatusByWorktreeId, clockNow, matches]
+  )
+  return { rows, unfilteredRows, workspaces }
 }

@@ -21615,7 +21615,26 @@
         "rename": "Rename",
         "namePlaceholder": "Thread name (optional, otherwise named from the prompt)",
         "nameLabel": "Thread name",
-        "history": "History"
+        "history": "History",
+        "tags": {
+          "menu": "Tags",
+          "thisThread": "This thread",
+          "allProjectThreads": "All {{project}} threads",
+          "new": "New tag…",
+          "createTitle": "New tag",
+          "renameTitle": "Edit tag",
+          "name": "Name",
+          "placeholder": "e.g. work",
+          "cancel": "Cancel",
+          "create": "Create",
+          "save": "Save",
+          "rename": "Rename…",
+          "color": "Color",
+          "delete": "Delete tag",
+          "clear": "Clear",
+          "noMatches": "No threads with these tags.",
+          "clearFilter": "Clear filter"
+        }
       }
     }
   },

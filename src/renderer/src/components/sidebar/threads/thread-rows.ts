@@ -7,6 +7,7 @@ import {
   orderThreadKeys,
   type ThreadStates
 } from '../../../../../shared/threads/thread-state'
+import { matchesThreadTagFilter, type ThreadTags } from '../../../../../shared/threads/thread-tags'
 
 export type ThreadRowKind = 'open' | 'snoozed' | 'settled'
 
@@ -46,13 +47,14 @@ export function classifyThread(
   return isThreadSnoozed(state, now, liveStatus === 'permission') ? 'snoozed' : 'open'
 }
 
-/** `matches` null means no search; a search filters every section. */
+/** `matches` null means no search; a search filters every section, as does the tag filter. */
 export function buildThreadRows(args: {
   workspaces: readonly Worktree[]
   states: ThreadStates
   liveStatusByWorktreeId: ReadonlyMap<string, LiveAgentWorktreeStatus>
   now: number
   matches: ReadonlySet<string> | null
+  tagFilter?: { filter: readonly string[]; tags: ThreadTags }
 }): ThreadRows {
   const open = new Map<string, ThreadRow>()
   const rows: ThreadRows = { pinned: [], rest: [], snoozed: [], settled: [] }
@@ -64,12 +66,16 @@ export function buildThreadRows(args: {
     if (args.matches && !args.matches.has(key)) {
       continue
     }
-    const kind = classifyThread(
-      worktree,
-      args.states,
-      args.liveStatusByWorktreeId.get(worktree.id),
-      args.now
-    )
+    const liveStatus = args.liveStatusByWorktreeId.get(worktree.id)
+    // A thread waiting on the user is never filtered out, as with snooze.
+    if (
+      args.tagFilter &&
+      liveStatus !== 'permission' &&
+      !matchesThreadTagFilter(args.tagFilter.filter, args.tagFilter.tags, key, worktree.repoId)
+    ) {
+      continue
+    }
+    const kind = classifyThread(worktree, args.states, liveStatus, args.now)
     if (kind === 'open') {
       open.set(key, { key, worktree, kind })
     } else if (kind === 'snoozed') {

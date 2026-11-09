@@ -1,3 +1,5 @@
+import { normalizeThreadTagFilter, normalizeThreadTags, type ThreadTags } from './thread-tags'
+
 /** Per-workspace state the Threads sidebar layout keeps; the workspace itself is unchanged. */
 export type ThreadState = {
   /** When the workspace last became an open thread. */
@@ -126,13 +128,20 @@ function finiteOrUndefined(value: unknown): number | undefined {
 export function normalizePersistedThreadUi(ui: {
   sidebarLayout?: unknown
   threadStates?: unknown
+  threadTags?: unknown
+  threadTagFilter?: unknown
 }): {
   sidebarLayout: SidebarLayout
   threadStates: ThreadStates
+  threadTags: ThreadTags
+  threadTagFilter: string[]
 } {
+  const threadTags = normalizeThreadTags(ui.threadTags)
   return {
     sidebarLayout: normalizeSidebarLayout(ui.sidebarLayout),
-    threadStates: normalizeThreadStates(ui.threadStates)
+    threadStates: normalizeThreadStates(ui.threadStates),
+    threadTags,
+    threadTagFilter: normalizeThreadTagFilter(ui.threadTagFilter, threadTags)
   }
 }
 

@@ -12,6 +12,7 @@ import { WorktreeRowOpenInSubMenu } from '../open/WorktreeRowOpenInSubMenu'
 import { WorktreeDeveloperMenu } from '../open/WorktreeDeveloperMenu'
 import { WorkspaceSleepMenuItems } from '../sleep/WorkspaceSleepMenuItems'
 import { ThreadMenuItems, ThreadRenameMenuItem } from '../../threads/ThreadMenuItems'
+import { ThreadTagMenuItems } from '../../threads/ThreadTagMenuItems'
 import { isEventTargetInsideCurrentTarget } from '../../workspace-card/controller/worktree-card-dom-events'
 import { useTranslate } from '@/i18n/use-translate'
 import type { WorktreeContextMenuModel } from './use-worktree-context-menu-model'
@@ -164,6 +165,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
                   : t('auto.components.sidebar.WorktreeContextMenu.3baa7d6507', 'Pin')}
               </DropdownMenuItem>
               <ThreadMenuItems worktree={worktree} disabled={isDeleting} />
+              <ThreadTagMenuItems worktree={worktree} disabled={isDeleting} />
             </>
           )}
           <WorktreeStatusMenuItems

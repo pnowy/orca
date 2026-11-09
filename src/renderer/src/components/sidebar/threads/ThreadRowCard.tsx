@@ -28,6 +28,7 @@ import {
 } from '../workspace-card/activity/worktree-card-agent-summary'
 import { settleThread, snoozeThread } from './thread-actions'
 import { THREAD_SNOOZE_OPTIONS } from './ThreadMenuItems'
+import { ThreadRowTags } from './ThreadRowTags'
 import {
   ThreadProjectGlyph,
   activateThread,
@@ -225,6 +226,7 @@ export const ThreadRowCard = React.memo(function ThreadRowCard({
         />
         <div className="flex min-h-4 min-w-0 items-center gap-1.5 text-xs text-muted-foreground/70">
           <span className="min-w-0 flex-1 truncate">{branch}</span>
+          <ThreadRowTags worktree={worktree} />
           <ThreadRowAgentIcons agents={agents} />
         </div>
       </div>

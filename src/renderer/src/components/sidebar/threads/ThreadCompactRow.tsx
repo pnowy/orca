@@ -9,6 +9,7 @@ import { WorktreeTitleInlineRename } from '../workspace-card/identity/WorktreeTi
 import { shouldBeginWorktreeRename } from '../workspace-card/controller/worktree-card-model'
 import { renameThread } from './thread-launch'
 import type { ThreadRow } from './thread-rows'
+import { ThreadRowTags } from './ThreadRowTags'
 import { ThreadProjectGlyph, activateThread, threadTitle } from './thread-project-identity'
 
 /** One-line row for the Snoozed and Settled sections: glyph, title, and time to wake or since settling. */
@@ -66,6 +67,7 @@ export const ThreadCompactRow = React.memo(function ThreadCompactRow({
           beginEditing={shouldBeginWorktreeRename(renamingRequest, row.worktree.id, undefined)}
           onBeginEditingConsumed={() => setRenamingRequest(null)}
         />
+        <ThreadRowTags worktree={row.worktree} dotsOnly />
         {timeLabel ? (
           <span className={cn('shrink-0 text-xs tabular-nums', snoozed && 'text-callout-note')}>
             {timeLabel}
